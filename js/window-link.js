@@ -1,0 +1,64 @@
+// Widget side of the separate map window: opens it, keeps it up to date and listens to it.
+// Messages travel only between two pages of this same site, and only from the window we opened.
+(function () {
+  const WINDOW_NAME = `map-view-window`;
+  const WINDOW_URL = new URL(`window.html?v=0.1.0`, location.href).href;
+  const POLL_MS = 1000;
+
+  class WindowLink {
+    // getState(): the full state to send. handlers: onSelect(id), onConfig(patch), onClosed().
+    constructor(getState, handlers) {
+      this.getState = getState;
+      this.handlers = handlers;
+      this.win = null;
+      this.timer = null;
+      window.addEventListener(`message`, (event) => this._onMessage(event));
+    }
+
+    get isOpen() {
+      return Boolean(this.win) && !this.win.closed;
+    }
+
+    // Opens (or reloads) the window. Returns false when the browser blocks it.
+    open() {
+      const width = Math.min(1200, Math.max(600, screen.availWidth - 100));
+      const height = Math.min(860, Math.max(400, screen.availHeight - 100));
+      // The link between the window and the widget is kept on purpose: Grist runs widgets in a
+      // sandboxed frame, which may only talk to windows it opened itself.
+      const opened = window.open(WINDOW_URL, WINDOW_NAME, `popup=yes,width=${width},height=${height},resizable=yes`);
+      if (!opened) return false;
+      this.win = opened;
+      clearInterval(this.timer);
+      this.timer = setInterval(() => { if (!this.isOpen) this._closed(); }, POLL_MS);
+      return true;
+    }
+
+    close() {
+      clearInterval(this.timer);
+      if (this.isOpen) this.win.close();
+      this.win = null;
+    }
+
+    send(type, payload) {
+      if (!this.isOpen) return;
+      this.win.postMessage({ type, payload }, location.origin);
+    }
+
+    _closed() {
+      clearInterval(this.timer);
+      this.win = null;
+      this.handlers.onClosed();
+    }
+
+    _onMessage(event) {
+      if (!this.win || event.source !== this.win || event.origin !== location.origin || !event.data) return;
+      const { type, payload } = event.data;
+      if (type === `mapview:window-ready`) this.send(`mapview:state`, this.getState());
+      else if (type === `mapview:select`) this.handlers.onSelect(payload.id);
+      else if (type === `mapview:config`) this.handlers.onConfig(payload.patch);
+      else if (type === `mapview:dock` || type === `mapview:closed`) this._closed();
+    }
+  }
+
+  window.WindowLink = WindowLink;
+})();
