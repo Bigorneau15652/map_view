@@ -65,7 +65,7 @@ The map is created once. Changing the base map, the overlay or the transparency 
 
 ### Releasing a change
 
-Browsers keep GitHub Pages files for about ten minutes. Scripts and styles are referenced with `?v=0.4.1`: change that number in `index.html`, `window.html`, `catalog.html` and `js/window-link.js` with every release.
+Browsers keep GitHub Pages files for about ten minutes. Scripts and styles are referenced with `?v=0.4.2`: change that number in `index.html`, `window.html`, `catalog.html` and `js/window-link.js` with every release.
 
 ### Files
 
