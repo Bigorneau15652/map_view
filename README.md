@@ -10,12 +10,12 @@ A map widget for [Grist](https://www.getgrist.com): one pin per row, a label wit
 
 - One pin per row, with the colour taken from a column (HEX code or colour name, in French or English), and a label (title and description) shown when the row is selected.
 - Two-way selection: selecting a row moves the map to its pin, clicking a pin selects the row in Grist.
-- A map catalogue opened from a button with a map icon: 21 reference layers of the IGN with a preview image, three open base maps (OpenStreetMap, CyclOSM, OpenTopoMap) and your own maps. The choice is applied with OK and thrown away with Cancel.
+- A map catalogue opened from a button with a map icon: 21 reference layers of the IGN with a preview image, three open base maps (OpenStreetMap, CyclOSM, OpenTopoMap) and your own maps. A click shows the map at once on the map; the choice is saved with OK, and Cancel puts the previous map back.
 - A base map and one overlay layer at the same time (for example aerial photographs and cadastral parcels), with a transparency slider at the bottom left of the map (it acts on the overlay, or on the base map when there is no overlay).
 - An "Other..." button to add as many maps as you like (name, tile address, copyright, optional API key, base map or overlay). Each map can be edited with a pencil or deleted with a cross, and is kept in the widget options.
 - In a small widget, the catalogue opens in its own window so that it can be read in full; in a large area it opens in place.
 - The buttons and sliders fade after three seconds without movement over the map and come back at the next movement.
-- A pin button fits the map to all the pins.
+- A target button centers the map on the selected pin, without changing the zoom.
 - A thin vertical zoom slider under the buttons at the top right (there are no + and - buttons).
 - The map reopens where you left it (centre and zoom). The view is kept in the browser of each user, not in the document, so that people do not change each other's view.
 - A button at the top right opens the map in a separate window, for example on a second screen. The window follows the row selected in Grist, and clicking a pin there selects the row in Grist. Closing the window, or the "put the map back" button, brings the map back into Grist.
@@ -65,7 +65,7 @@ The map is created once. Changing the base map, the overlay or the transparency 
 
 ### Releasing a change
 
-Browsers keep GitHub Pages files for about ten minutes. Scripts and styles are referenced with `?v=0.3.0`: change that number in `index.html`, `window.html`, `catalog.html` and `js/window-link.js` with every release.
+Browsers keep GitHub Pages files for about ten minutes. Scripts and styles are referenced with `?v=0.4.0`: change that number in `index.html`, `window.html`, `catalog.html` and `js/window-link.js` with every release.
 
 ### Files
 
@@ -84,12 +84,12 @@ Widget carte pour [Grist](https://www.getgrist.com) : une épingle par ligne, un
 
 - Une épingle par ligne, dont la couleur vient d'une colonne (code HEX ou nom de couleur en français ou en anglais), et une étiquette (titre et description) affichée à la sélection de la ligne.
 - Sélection dans les deux sens : sélectionner une ligne amène la carte sur son épingle, cliquer une épingle sélectionne la ligne dans Grist.
-- Un catalogue de cartes ouvert par un bouton à pictogramme de carte : 21 couches de référence de l'IGN avec vignette, trois fonds libres (OpenStreetMap, CyclOSM, OpenTopoMap) et vos propres cartes. Le choix s'applique avec OK et s'abandonne avec Annuler.
+- Un catalogue de cartes ouvert par un bouton à pictogramme de carte : 21 couches de référence de l'IGN avec vignette, trois fonds libres (OpenStreetMap, CyclOSM, OpenTopoMap) et vos propres cartes. Un clic affiche aussitôt la carte ; le choix est enregistré avec OK, et Annuler remet la carte précédente.
 - Un fond de carte et une couche superposée en même temps (par exemple photographies aériennes et parcelles cadastrales), avec une réglette de transparence en bas à gauche de la carte (elle agit sur la couche superposée, ou sur le fond de carte quand il n'y en a pas).
 - Un bouton « Autre… » pour ajouter autant de cartes que vous voulez (nom, adresse des tuiles, droits d'auteur, clé API facultative, fond ou couche superposée). Chaque carte peut être modifiée avec un crayon ou supprimée avec une croix, et est conservée dans les options du widget.
 - Dans un petit widget, le catalogue s'ouvre dans sa propre fenêtre pour pouvoir être lu en entier ; dans une grande zone, il s'ouvre sur place.
 - Les boutons et les réglettes s'effacent après trois secondes sans mouvement sur la carte et reviennent au mouvement suivant.
-- Un bouton en forme d'épingle recadre la carte sur toutes les épingles.
+- Un bouton en forme de viseur centre la carte sur l'épingle sélectionnée, sans changer le zoom.
 - Un curseur de zoom vertical fin sous les boutons en haut à droite (il n'y a pas de boutons + et −).
 - La carte se rouvre là où vous l'avez laissée (position et zoom). La vue est conservée dans le navigateur de chaque utilisateur, pas dans le document, pour que les personnes ne modifient pas la vue des autres.
 - Un bouton en haut à droite ouvre la carte dans une fenêtre séparée, par exemple sur un second écran. La fenêtre suit la ligne sélectionnée dans Grist, et un clic sur une épingle y sélectionne la ligne dans Grist. Fermer la fenêtre, ou le bouton « Réintégrer la carte », ramène la carte dans Grist.
