@@ -47,8 +47,6 @@
       deleteMap: `Supprimer cette carte`,
       other: `Autre…`,
 
-      // Themes of the IGN catalogue
-
       // "Other" dialog
       dialogTitle: `Ajouter une carte`,
       fieldName: `Nom de la carte`,
@@ -143,5 +141,5 @@
     );
   }
 
-  window.mapViewI18n = { t, lang };
+  window.mapViewI18n = { t };
 })();

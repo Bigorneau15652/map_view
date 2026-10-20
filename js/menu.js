@@ -1,4 +1,4 @@
-// The map catalogue menu (button with a map icon), its "Other" dialog, the settings tab
+// The map catalogue menu (button with a map icon), its "Other" dialog
 // and the transparency slider. All text from the data or from the user is written with
 // textContent, never as HTML.
 (function () {
