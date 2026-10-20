@@ -10,12 +10,14 @@ A map widget for [Grist](https://www.getgrist.com): one pin per row, a label wit
 
 - One pin per row, with the colour taken from a column (HEX code or colour name, in French or English), and a label (title and description) shown when the row is selected.
 - Two-way selection: selecting a row moves the map to its pin, clicking a pin selects the row in Grist.
-- A map catalogue opened from a button with a map icon: reference maps with a preview image, a few open base maps (OpenStreetMap, CyclOSM, OpenTopoMap) and about 670 IGN layers sorted by theme and searchable.
+- A map catalogue opened from a button with a map icon: 21 reference layers of the IGN with a preview image, three open base maps (OpenStreetMap, CyclOSM, OpenTopoMap) and your own maps. The choice is applied with OK and thrown away with Cancel.
 - A base map and one overlay layer at the same time (for example aerial photographs and cadastral parcels), with a transparency slider at the bottom left of the map (it acts on the overlay, or on the base map when there is no overlay).
-- An "Other..." entry to add your own map (name, tile address, copyright, optional API key, base map or overlay). The new map is added to the list and kept in the widget options.
+- An "Other..." button to add as many maps as you like (name, tile address, copyright, optional API key, base map or overlay). Each map can be edited with a pencil or deleted with a cross, and is kept in the widget options.
 - In a small widget, the catalogue opens in its own window so that it can be read in full; in a large area it opens in place.
-- A vertical zoom slider under the buttons at the top right, shown only while the pointer is over the map.
-- The map reopens where you left it (centre and zoom). The view is kept in the browser of each user, not in the document, so that people do not change each other's view. A button in the Settings tab fits the map to all the pins again.
+- The buttons and sliders fade after three seconds without movement over the map and come back at the next movement.
+- A pin button fits the map to all the pins.
+- A thin vertical zoom slider under the buttons at the top right (there are no + and - buttons).
+- The map reopens where you left it (centre and zoom). The view is kept in the browser of each user, not in the document, so that people do not change each other's view.
 - A button at the top right opens the map in a separate window, for example on a second screen. The window follows the row selected in Grist, and clicking a pin there selects the row in Grist. Closing the window, or the "put the map back" button, brings the map back into Grist.
 - Interface in French and English, chosen from the browser language.
 
@@ -43,7 +45,7 @@ A row without coordinates (empty or 0 and 0) is skipped silently. A row whose co
 
 ### Maps and rights
 
-No map is stored in this repository. The list of maps, the provider of each one and what is known about their terms are in [MAPS.md](MAPS.md). The IGN layers come from the public Géoplateforme service and need no key; their list was read on 2026-10-20 (see `data/README.md`). TOPO 25 and the "Cartes IGN" layers are not part of that public service. Maps whose terms could not be confirmed (Esri and others) are not included: see "Not included" in [MAPS.md](MAPS.md).
+No map is stored in this repository. The list of maps, the provider of each one and what is known about their terms are in [MAPS.md](MAPS.md). The 21 IGN layers come from the public Géoplateforme service and need no key (see `data/README.md`). The service holds hundreds of other layers, but many do not work in this widget, so they are left out: add one with "Other..." if you need it. TOPO 25 and the "Cartes IGN" layers are not part of that public service. Maps whose terms could not be confirmed (Esri and others) are not included: see "Not included" in [MAPS.md](MAPS.md).
 
 ### Adding a map with "Other..."
 
@@ -63,7 +65,7 @@ The map is created once. Changing the base map, the overlay or the transparency 
 
 ### Releasing a change
 
-Browsers keep GitHub Pages files for about ten minutes. Scripts and styles are referenced with `?v=0.2.0`: change that number in `index.html`, `window.html`, `catalog.html` and `js/window-link.js` with every release.
+Browsers keep GitHub Pages files for about ten minutes. Scripts and styles are referenced with `?v=0.3.0`: change that number in `index.html`, `window.html`, `catalog.html` and `js/window-link.js` with every release.
 
 ### Files
 
@@ -82,12 +84,14 @@ Widget carte pour [Grist](https://www.getgrist.com) : une épingle par ligne, un
 
 - Une épingle par ligne, dont la couleur vient d'une colonne (code HEX ou nom de couleur en français ou en anglais), et une étiquette (titre et description) affichée à la sélection de la ligne.
 - Sélection dans les deux sens : sélectionner une ligne amène la carte sur son épingle, cliquer une épingle sélectionne la ligne dans Grist.
-- Un catalogue de cartes ouvert par un bouton à pictogramme de carte : cartes de référence avec vignette, quelques fonds libres (OpenStreetMap, CyclOSM, OpenTopoMap) et environ 670 couches de l'IGN classées par thème, avec recherche.
+- Un catalogue de cartes ouvert par un bouton à pictogramme de carte : 21 couches de référence de l'IGN avec vignette, trois fonds libres (OpenStreetMap, CyclOSM, OpenTopoMap) et vos propres cartes. Le choix s'applique avec OK et s'abandonne avec Annuler.
 - Un fond de carte et une couche superposée en même temps (par exemple photographies aériennes et parcelles cadastrales), avec une réglette de transparence en bas à gauche de la carte (elle agit sur la couche superposée, ou sur le fond de carte quand il n'y en a pas).
-- Une entrée « Autre… » pour ajouter votre propre carte (nom, adresse des tuiles, droits d'auteur, clé API facultative, fond ou couche superposée). La carte s'ajoute à la liste et est conservée dans les options du widget.
+- Un bouton « Autre… » pour ajouter autant de cartes que vous voulez (nom, adresse des tuiles, droits d'auteur, clé API facultative, fond ou couche superposée). Chaque carte peut être modifiée avec un crayon ou supprimée avec une croix, et est conservée dans les options du widget.
 - Dans un petit widget, le catalogue s'ouvre dans sa propre fenêtre pour pouvoir être lu en entier ; dans une grande zone, il s'ouvre sur place.
-- Un curseur de zoom vertical sous les boutons en haut à droite, affiché seulement quand le pointeur survole la carte.
-- La carte se rouvre là où vous l'avez laissée (position et zoom). La vue est conservée dans le navigateur de chaque utilisateur, pas dans le document, pour que les personnes ne modifient pas la vue des autres. Un bouton de l'onglet Réglages recadre la carte sur l'ensemble des épingles.
+- Les boutons et les réglettes s'effacent après trois secondes sans mouvement sur la carte et reviennent au mouvement suivant.
+- Un bouton en forme d'épingle recadre la carte sur toutes les épingles.
+- Un curseur de zoom vertical fin sous les boutons en haut à droite (il n'y a pas de boutons + et −).
+- La carte se rouvre là où vous l'avez laissée (position et zoom). La vue est conservée dans le navigateur de chaque utilisateur, pas dans le document, pour que les personnes ne modifient pas la vue des autres.
 - Un bouton en haut à droite ouvre la carte dans une fenêtre séparée, par exemple sur un second écran. La fenêtre suit la ligne sélectionnée dans Grist, et un clic sur une épingle y sélectionne la ligne dans Grist. Fermer la fenêtre, ou le bouton « Réintégrer la carte », ramène la carte dans Grist.
 - Interface en français et en anglais, selon la langue du navigateur.
 
@@ -107,7 +111,7 @@ Les colonnes sont celles du tableau ci-dessus. Une ligne sans coordonnées (vide
 
 ### Cartes et droits
 
-Aucune carte n'est stockée dans ce dépôt. La liste des cartes, le fournisseur de chacune et ce que l'on sait de leurs conditions sont dans [MAPS.md](MAPS.md). Les couches IGN viennent du service public Géoplateforme et ne demandent aucune clé ; leur liste a été lue le 20 octobre 2026 (voir `data/README.md`). Les couches TOPO 25 et « Cartes IGN » ne font pas partie de ce service public. Les cartes dont les conditions n'ont pas pu être confirmées (Esri et d'autres) ne sont pas incluses : voir « Cartes non incluses » dans [MAPS.md](MAPS.md).
+Aucune carte n'est stockée dans ce dépôt. La liste des cartes, le fournisseur de chacune et ce que l'on sait de leurs conditions sont dans [MAPS.md](MAPS.md). Les 21 couches IGN viennent du service public Géoplateforme et ne demandent aucune clé (voir `data/README.md`). Le service contient des centaines d'autres couches, mais beaucoup ne fonctionnent pas dans ce widget : elles sont écartées, et « Autre… » permet d'en ajouter une au besoin. Les couches TOPO 25 et « Cartes IGN » ne font pas partie de ce service public. Les cartes dont les conditions n'ont pas pu être confirmées (Esri et d'autres) ne sont pas incluses : voir « Cartes non incluses » dans [MAPS.md](MAPS.md).
 
 ### Ajouter une carte avec « Autre… »
 

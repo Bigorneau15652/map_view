@@ -5,7 +5,6 @@
 
   const DEFAULT_BASE_ID = `ign:GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2`;
   const DEFAULT_OPACITY = 0.7;
-  const DEFAULT_ZOOM = 13;
   const MAX_CUSTOM_MAPS = 50;
 
   // Reads the saved options of the widget and returns a complete, valid configuration:
@@ -27,14 +26,11 @@
       const number = Number(value);
       return Number.isFinite(number) ? Math.min(1, Math.max(0.1, number)) : fallback;
     };
-    const zoom = Number(source.defaultZoom);
     return {
       baseId: known(source.baseId) || DEFAULT_BASE_ID,
       overlayId: known(source.overlayId),
       overlayOpacity: clampOpacity(source.overlayOpacity, DEFAULT_OPACITY),
       baseOpacity: clampOpacity(source.baseOpacity, 1),
-      defaultZoom: Number.isFinite(zoom) ? Math.min(20, Math.max(1, Math.round(zoom))) : DEFAULT_ZOOM,
-      showPopup: source.showPopup === undefined ? true : Boolean(source.showPopup),
       customMaps
     };
   }

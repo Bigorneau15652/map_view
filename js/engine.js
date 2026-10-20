@@ -8,6 +8,7 @@
   const CLUSTER_RADIUS = 30;
   const NO_CLUSTER_ZOOM = 18;
   const FIT_PADDING = [30, 30];
+  const FIT_MAX_ZOOM = 13;
   const SELECTED_Z_OFFSET = 1000;
   const FRANCE_CENTER = [46.6, 2.4];
   const FRANCE_ZOOM = 5;
@@ -21,8 +22,6 @@
       this.handlers = handlers || {};
       this.entries = new Map();      // row id -> { marker, signature, point }
       this.selectedId = null;
-      this.defaultZoom = 13;
-      this.showPopup = true;
       this.baseLayer = null;
       this.overlayLayer = null;
       this.pendingView = null;       // saved view to restore when the first pins arrive
@@ -30,7 +29,7 @@
       this.lastUserAction = 0;
       this.viewTimer = null;
 
-      this.map = L.map(container, { wheelPxPerZoomLevel: 90, maxZoom: MAX_ZOOM });
+      this.map = L.map(container, { zoomControl: false, wheelPxPerZoomLevel: 90, maxZoom: MAX_ZOOM });
       this.map.setView(FRANCE_CENTER, FRANCE_ZOOM);
       // Overlay tiles sit above the base tiles and below the markers.
       this.map.createPane(`overlayTiles`).style.zIndex = 250;
@@ -139,16 +138,7 @@
       }, VIEW_SAVE_DELAY_MS);
     }
 
-    // ---------------------------------------------------------------- Settings
-
-    setDefaultZoom(zoom) {
-      this.defaultZoom = zoom;
-    }
-
-    setShowPopup(show) {
-      this.showPopup = show;
-      if (!show) this.map.closePopup();
-    }
+    // ------------------------------------------------------------------ Size
 
     invalidateSize() {
       this.map.invalidateSize();
@@ -237,7 +227,7 @@
     _fit() {
       const bounds = L.latLngBounds([...this.entries.values()].map((e) => e.marker.getLatLng()));
       if (bounds.isValid()) {
-        this.map.fitBounds(bounds, { maxZoom: this.defaultZoom, padding: FIT_PADDING, animate: false });
+        this.map.fitBounds(bounds, { maxZoom: FIT_MAX_ZOOM, padding: FIT_PADDING, animate: false });
       }
     }
 
@@ -284,7 +274,7 @@
 
       const show = () => {
         this.map.panTo(marker.getLatLng());
-        if (this.showPopup) marker.openPopup();
+        marker.openPopup();
       };
       // A pin hidden inside a cluster needs the map to zoom in on it first.
       if (marker._icon) show();

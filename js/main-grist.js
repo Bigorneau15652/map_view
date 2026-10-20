@@ -26,7 +26,7 @@
   const catalogLink = new window.WindowLink(
     { page: `catalog.html`, name: `map-view-catalogue`, width: 520, height: 820 },
     () => ({ config: shared.config }),
-    { onConfig: (patch) => app.change(patch), onResetView: () => app.resetView(), onClosed: () => {} }
+    { onConfig: (patch) => app.change(patch), onClosed: () => {} }
   );
 
   // Sends the settings to the catalogue window after any change.

@@ -5,7 +5,6 @@
   const { t } = window.mapViewI18n;
   const catalog = window.mapViewCatalog;
 
-  const MAX_RESULTS = 120;
   const MAX_NAME_LENGTH = 80;
   const MAX_TRANSPARENCY = 0.9;
   const SVG_NS = `http://www.w3.org/2000/svg`;
@@ -45,6 +44,7 @@
   const ICON_MAP = [`M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z`, `M9 4v14`, `M15 6v14`];
   const ICON_EXPAND = [`M15 3h6v6`, `M9 21H3v-6`, `M21 3l-7 7`, `M3 21l7-7`];
   const ICON_DOCK = [`M14 10h6V4`, `M10 14H4v6`, `M20 4l-7 7`, `M4 20l7-7`];
+  const ICON_FIT = [`M12 21s-6-5.5-6-10a6 6 0 0 1 12 0c0 4.5-6 10-6 10z`, `M12 8.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 1 0 0-5z`];
 
   function newId() {
     return `custom:${window.crypto && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)}`;
@@ -52,6 +52,8 @@
 
   // ------------------------------------------------------------ Catalogue menu
 
+  // The catalogue panel. The user picks a base map and an overlay layer, then confirms with OK
+  // or throws the choice away with Cancel: nothing changes on the map before OK.
   class CatalogMenu {
     // getConfig(): current settings. onChange(patch): called with the settings that changed.
     // options.onButton(): replaces the default behaviour of the button (open the panel here).
@@ -61,8 +63,7 @@
       this.onChange = onChange;
       this.options = options || {};
       this.tab = `base`;
-      this.query = ``;
-      this.theme = ``;
+      this.draft = null;     // the choice being made: { baseId, overlayId }
 
       this.button = h(`button`, {
         type: `button`, class: `tool`, title: t(`openCatalog`), [`aria-label`]: t(`openCatalog`),
@@ -74,111 +75,100 @@
         [`aria-label`]: t(`menuTitle`), hidden: !this.options.embedded
       });
       document.addEventListener(`keydown`, (event) => {
-        if (event.key !== `Escape` || this.options.embedded) return;
+        if (event.key !== `Escape`) return;
         if (this.dialog) this.closeDialog();
-        else if (!this.panel.hidden) this.toggle(false);
+        else if (!this.panel.hidden) this.cancel();
       });
+      if (this.options.embedded) this.startDraft();
+    }
+
+    get isOpen() {
+      return !this.panel.hidden;
+    }
+
+    startDraft() {
+      const { baseId, overlayId } = this.getConfig();
+      this.draft = { baseId, overlayId };
     }
 
     toggle(open) {
       const show = open === undefined ? this.panel.hidden : open;
       this.panel.hidden = !show;
       this.button.setAttribute(`aria-expanded`, String(show));
-      if (show) this.render();
+      if (show) {
+        this.startDraft();
+        this.render();
+      } else {
+        this.closeDialog();
+      }
     }
 
-    // Draws the whole panel again (cheap: long lists are built only when opened).
+    // OK: apply the choice, then close.
+    confirm() {
+      const config = this.getConfig();
+      const patch = {};
+      if (this.draft.baseId !== config.baseId) patch.baseId = this.draft.baseId;
+      if (this.draft.overlayId !== config.overlayId) patch.overlayId = this.draft.overlayId;
+      if (Object.keys(patch).length) this.onChange(patch);
+      this.finish();
+    }
+
+    // Cancel: forget the choice, then close.
+    cancel() {
+      this.finish();
+    }
+
+    finish() {
+      if (this.options.embedded) window.close();
+      else this.toggle(false);
+    }
+
+    // Draws the whole panel again, keeping the scroll position of the list.
     render() {
       if (this.panel.hidden) return;
-      // Keep the scroll position of the list when the panel is drawn again.
       const list = this.panel.querySelector(`.list`);
       const scroll = list ? list.scrollTop : 0;
+      const dialog = this.dialog;
       this.panel.textContent = ``;
-      const tabs = [[`base`, `tabBase`], [`overlay`, `tabOverlay`], [`settings`, `tabSettings`]];
+      const tabs = [[`base`, `tabBase`], [`overlay`, `tabOverlay`]];
       this.panel.append(
         h(`div`, { class: `panel-head` },
           h(`strong`, { text: t(`menuTitle`) }),
-          h(`button`, { type: `button`, class: `plain`, title: t(`close`), [`aria-label`]: t(`close`), text: `×`, onclick: () => this.toggle(false) })),
+          h(`button`, { type: `button`, class: `plain`, title: t(`cancel`), [`aria-label`]: t(`cancel`), text: `×`, onclick: () => this.cancel() })),
         h(`div`, { class: `tabs`, role: `tablist` }, tabs.map(([id, key]) =>
           h(`button`, {
             type: `button`, role: `tab`, text: t(key), [`aria-selected`]: String(this.tab === id),
             onclick: () => { this.tab = id; this.render(); }
-          })))
-      );
-      if (this.tab === `settings`) this.panel.append(this.settingsView());
-      else this.panel.append(this.listView());
-      const newList = this.panel.querySelector(`.list`);
-      if (newList) newList.scrollTop = scroll;
-    }
-
-    // ---------------------------------------------------------------- List tabs
-
-    listView() {
-      const target = this.tab;
-      const search = h(`input`, {
-        type: `search`, placeholder: t(`searchPlaceholder`), value: this.query,
-        [`aria-label`]: t(`searchPlaceholder`)
-      });
-      const theme = h(`select`, { [`aria-label`]: t(`themeAll`) },
-        h(`option`, { value: ``, text: t(`themeAll`) }),
-        catalog.THEMES.map((id) => h(`option`, { value: id, text: t(`theme_${id}`), selected: this.theme === id })));
-      const body = h(`div`, { class: `list` });
-      const refill = () => { body.textContent = ``; body.append(this.listBody(target)); };
-      search.addEventListener(`input`, () => { this.query = search.value; refill(); });
-      theme.addEventListener(`change`, () => { this.theme = theme.value; refill(); });
-      refill();
-      return h(`div`, { class: `list-view` },
-        h(`div`, { class: `filters` }, search, theme),
-        body,
+          }))),
+        h(`div`, { class: `list` }, this.listBody()),
         h(`div`, { class: `panel-foot` },
-          h(`button`, { type: `button`, class: `action`, text: t(`other`), onclick: () => this.openDialog() })));
+          h(`button`, { type: `button`, class: `outline`, text: t(`other`), onclick: () => this.openDialog() }),
+          h(`span`, { class: `spacer` }),
+          h(`button`, { type: `button`, class: `outline`, text: t(`cancel`), onclick: () => this.cancel() }),
+          h(`button`, { type: `button`, class: `action`, text: t(`ok`), onclick: () => this.confirm() }))
+      );
+      const newList = this.panel.querySelector(`.list`);
+      newList.scrollTop = scroll;
+      if (dialog) this.panel.append(dialog);
     }
 
-    // Everything the list can show, as one flat array (user maps first).
-    allEntries() {
-      const custom = this.getConfig().customMaps.map((item) => catalog.customEntry(item));
-      return [...custom, ...catalog.builtIn, ...catalog.ign];
-    }
+    // ---------------------------------------------------------------- List
 
-    listBody(target) {
+    listBody() {
+      const target = this.tab;
       const fragment = document.createDocumentFragment();
-      const query = this.query.trim().toLowerCase();
-
-      // Search or theme filter: one flat list of results.
-      if (query || this.theme) {
-        const results = this.allEntries().filter((entry) =>
-          (!this.theme || entry.theme === this.theme) &&
-          (!query || `${entry.title} ${entry.source}`.toLowerCase().includes(query)));
-        fragment.append(this.heading(t(`sectionResults`)));
-        if (!results.length) fragment.append(h(`p`, { class: `empty`, text: t(`noResults`) }));
-        results.slice(0, MAX_RESULTS).forEach((entry) => fragment.append(this.row(entry, target)));
-        if (results.length > MAX_RESULTS) fragment.append(h(`p`, { class: `empty`, text: t(`moreResults`) }));
-        return fragment;
-      }
-
       if (target === `overlay`) fragment.append(this.noneRow());
-      const custom = this.getConfig().customMaps.map((item) => catalog.customEntry(item));
+      const custom = this.getConfig().customMaps
+        .filter((item) => item.kind === target)
+        .map((item) => catalog.customEntry(item));
       if (custom.length) {
         fragment.append(this.heading(t(`sectionCustom`)));
         custom.forEach((entry) => fragment.append(this.row(entry, target)));
       }
       fragment.append(this.heading(t(`sectionReference`)));
-      catalog.reference.forEach((entry) => fragment.append(this.row(entry, target)));
+      catalog.ign.forEach((entry) => fragment.append(this.row(entry, target)));
       fragment.append(this.heading(t(`sectionBase`)));
       catalog.builtIn.forEach((entry) => fragment.append(this.row(entry, target)));
-      fragment.append(this.heading(t(`sectionIgn`)));
-      for (const theme of catalog.THEMES) {
-        const entries = catalog.ign.filter((entry) => entry.theme === theme && !catalog.isReference(entry));
-        if (!entries.length) continue;
-        const details = h(`details`, { class: `theme` }, h(`summary`, { text: `${t(`theme_${theme}`)} (${entries.length})` }));
-        // The rows of a theme are built the first time it is opened.
-        details.addEventListener(`toggle`, () => {
-          if (!details.open || details.dataset.filled) return;
-          details.dataset.filled = `1`;
-          entries.forEach((entry) => details.append(this.row(entry, target)));
-        });
-        fragment.append(details);
-      }
       return fragment;
     }
 
@@ -188,26 +178,26 @@
 
     noneRow() {
       const radio = h(`input`, {
-        type: `radio`, name: `pick-overlay`, checked: !this.getConfig().overlayId,
-        onchange: () => this.onChange({ overlayId: null })
+        type: `radio`, name: `pick-overlay`, checked: !this.draft.overlayId,
+        onchange: () => { this.draft.overlayId = null; }
       });
       return h(`div`, { class: `row-wrap` },
         h(`label`, { class: `row` }, radio, h(`span`, { class: `thumb none`, text: `∅` }),
           h(`span`, { class: `row-text` }, h(`span`, { class: `row-title`, text: t(`noOverlay`) }))));
     }
 
-    // One catalogue entry: radio, preview image or theme colour, title and source.
+    // One catalogue entry: radio, preview image, title and source. A map added by the user
+    // also has a pencil (edit) and a cross (delete).
     row(entry, target) {
-      const config = this.getConfig();
       const key = target === `base` ? `baseId` : `overlayId`;
       const radio = h(`input`, {
-        type: `radio`, name: `pick-${target}`, checked: config[key] === entry.id,
-        onchange: () => this.onChange({ [key]: entry.id })
+        type: `radio`, name: `pick-${target}`, checked: this.draft[key] === entry.id,
+        onchange: () => { this.draft[key] = entry.id; }
       });
 
-      let thumb = h(`span`, { class: `thumb theme-${entry.theme}`, [`aria-hidden`]: `true` });
-      // Only the reference layers have a preview image, loaded when the menu is shown.
-      if (entry.reference) {
+      let thumb = h(`span`, { class: `thumb`, [`aria-hidden`]: `true` });
+      // Only the IGN layers have a preview image, loaded when the menu is shown.
+      if (entry.isIgn) {
         const image = h(`img`, { class: `thumb`, alt: ``, width: 56, height: 56, loading: `lazy`, src: catalog.thumbnailUrl(entry) });
         image.addEventListener(`error`, () => image.replaceWith(thumb));
         thumb = image;
@@ -223,49 +213,39 @@
       return h(`div`, { class: `row-wrap` },
         h(`label`, { class: `row` }, radio, thumb, text),
         entry.custom && h(`button`, {
+          type: `button`, class: `plain`, title: t(`editMap`), [`aria-label`]: t(`editMap`), text: `✎`,
+          onclick: () => this.openDialog(entry.id)
+        }),
+        entry.custom && h(`button`, {
           type: `button`, class: `plain`, title: t(`deleteMap`), [`aria-label`]: t(`deleteMap`), text: `×`,
           onclick: () => this.deleteCustom(entry.id)
         }));
     }
 
+    // Deleting a map of the user is applied at once; the pending choice forgets it too.
     deleteCustom(id) {
       const config = this.getConfig();
       const patch = { customMaps: config.customMaps.filter((item) => item.id !== id) };
       if (config.baseId === id) patch.baseId = null;
       if (config.overlayId === id) patch.overlayId = null;
+      if (this.draft.baseId === id) this.draft.baseId = null;
+      if (this.draft.overlayId === id) this.draft.overlayId = null;
       this.onChange(patch);
       this.render();
     }
 
-    // ------------------------------------------------------------- Settings tab
+    // ------------------------------------------------------------ Map dialog
 
-    settingsView() {
-      const config = this.getConfig();
-      const zoomValue = h(`strong`, { text: String(config.defaultZoom) });
-      const zoom = h(`input`, { type: `range`, min: 1, max: 20, value: config.defaultZoom, [`aria-label`]: t(`zoomMax`) });
-      zoom.addEventListener(`input`, () => { zoomValue.textContent = zoom.value; });
-      // The setting is saved when the slider is released, not at every step.
-      zoom.addEventListener(`change`, () => this.onChange({ defaultZoom: Number(zoom.value) }));
-      const popup = h(`input`, { type: `checkbox`, checked: config.showPopup });
-      popup.addEventListener(`change`, () => this.onChange({ showPopup: popup.checked }));
-      return h(`div`, { class: `settings` },
-        h(`label`, { class: `setting` }, h(`span`, { text: t(`zoomMax`) }), h(`span`, { class: `slider` }, zoom, zoomValue)),
-        h(`label`, { class: `setting check` }, popup, h(`span`, { text: t(`showPopup`) })),
-        this.options.onResetView && h(`div`, { class: `setting` },
-          h(`button`, { type: `button`, class: `action`, text: t(`resetView`), onclick: () => this.options.onResetView() }),
-          h(`p`, { class: `note`, text: t(`resetViewNote`) })),
-        h(`p`, { class: `note`, text: t(`privacyNote`) }));
-    }
-
-    // ------------------------------------------------------------ Other dialog
-
-    openDialog() {
-      const name = h(`input`, { type: `text`, maxlength: MAX_NAME_LENGTH, autocomplete: `off`, id: `f-name` });
-      const url = h(`input`, { type: `text`, autocomplete: `off`, id: `f-url`, placeholder: `https://…/{z}/{x}/{y}.png` });
-      const copyright = h(`input`, { type: `text`, autocomplete: `off`, id: `f-copyright` });
-      const key = h(`input`, { type: `text`, autocomplete: `off`, id: `f-key` });
-      const base = h(`input`, { type: `radio`, name: `f-kind`, value: `base`, checked: this.tab !== `overlay` });
-      const overlay = h(`input`, { type: `radio`, name: `f-kind`, value: `overlay`, checked: this.tab === `overlay` });
+    // Opens the "Other" dialog: empty to add a map, filled with the map `editId` to change it.
+    openDialog(editId) {
+      const existing = editId ? this.getConfig().customMaps.find((item) => item.id === editId) : null;
+      const kindNow = existing ? existing.kind : this.tab;
+      const name = h(`input`, { type: `text`, maxlength: MAX_NAME_LENGTH, autocomplete: `off`, id: `f-name`, value: existing ? existing.name : `` });
+      const url = h(`input`, { type: `text`, autocomplete: `off`, id: `f-url`, value: existing ? existing.url : ``, placeholder: `https://…/{z}/{x}/{y}.png` });
+      const copyright = h(`input`, { type: `text`, autocomplete: `off`, id: `f-copyright`, value: existing ? existing.copyright : `` });
+      const key = h(`input`, { type: `text`, autocomplete: `off`, id: `f-key`, value: existing ? existing.key : `` });
+      const base = h(`input`, { type: `radio`, name: `f-kind`, value: `base`, checked: kindNow !== `overlay` });
+      const overlay = h(`input`, { type: `radio`, name: `f-kind`, value: `overlay`, checked: kindNow === `overlay` });
       const errors = { name: h(`p`, { class: `error`, role: `alert` }), url: h(`p`, { class: `error`, role: `alert` }), key: h(`p`, { class: `error`, role: `alert` }) };
 
       const submit = () => {
@@ -287,8 +267,12 @@
         if (problems.name || problems.url || problems.key) return;
 
         const kind = overlay.checked ? `overlay` : `base`;
-        const item = { id: newId(), name: nameText, url: urlText, copyright: copyright.value.trim(), key: keyText, kind };
-        this.onChange({ customMaps: [...this.getConfig().customMaps, item] });
+        const item = {
+          id: existing ? existing.id : newId(), name: nameText, url: urlText,
+          copyright: copyright.value.trim(), key: keyText, kind
+        };
+        const maps = this.getConfig().customMaps;
+        this.onChange({ customMaps: existing ? maps.map((m) => (m.id === existing.id ? item : m)) : [...maps, item] });
         this.closeDialog();
         this.tab = kind;
         this.render();
@@ -298,10 +282,10 @@
         h(`label`, { for: input.id, text: t(labelKey) }), input,
         help && h(`p`, { class: `note`, text: t(help) }), error);
 
-      this.dialog = h(`div`, { class: `dialog-back` },
+      this.dialog = h(`div`, { class: `dialog-back`, onclick: (event) => { if (event.target === this.dialog) this.closeDialog(); } },
         h(`form`, { class: `dialog`, role: `dialog`, [`aria-label`]: t(`dialogTitle`), novalidate: true,
           onsubmit: (event) => { event.preventDefault(); submit(); } },
-          h(`strong`, { text: t(`dialogTitle`) }),
+          h(`strong`, { text: t(existing ? `dialogTitleEdit` : `dialogTitle`) }),
           field(`fieldName`, name, null, errors.name),
           field(`fieldUrl`, url, `fieldUrlHelp`, errors.url),
           field(`fieldCopyright`, copyright, null, null),
@@ -309,8 +293,8 @@
           h(`fieldset`, { class: `kind` }, h(`legend`, { text: t(`fieldType`) }),
             h(`label`, {}, base, ` ${t(`typeBase`)}`), h(`label`, {}, overlay, ` ${t(`typeOverlay`)}`)),
           h(`div`, { class: `buttons` },
-            h(`button`, { type: `button`, class: `plain-text`, text: t(`cancel`), onclick: () => this.closeDialog() }),
-            h(`button`, { type: `submit`, class: `action`, text: t(`create`) }))));
+            h(`button`, { type: `button`, class: `outline`, text: t(`cancel`), onclick: () => this.closeDialog() }),
+            h(`button`, { type: `submit`, class: `action`, text: t(existing ? `save` : `create`) }))));
       this.panel.append(this.dialog);
       name.focus();
     }
@@ -359,5 +343,5 @@
     }
   }
 
-  window.mapViewMenu = { CatalogMenu, TransparencyControl, h, icon, ICON_EXPAND, ICON_DOCK };
+  window.mapViewMenu = { CatalogMenu, TransparencyControl, h, icon, ICON_EXPAND, ICON_DOCK, ICON_FIT };
 })();
