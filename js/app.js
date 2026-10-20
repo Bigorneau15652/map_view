@@ -3,39 +3,12 @@
 (function () {
   const { t } = window.mapViewI18n;
   const catalog = window.mapViewCatalog;
+  const { normalizeConfig } = window.mapViewConfig;
   const { CatalogMenu, TransparencyControl, h, icon, ICON_EXPAND, ICON_DOCK } = window.mapViewMenu;
 
-  const DEFAULT_BASE_ID = `ign:GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2`;
-  const DEFAULT_OPACITY = 0.7;
-  const DEFAULT_ZOOM = 13;
-  const MAX_CUSTOM_MAPS = 50;
-
-  // Reads the saved options of the widget and returns a complete, valid configuration:
-  // an unknown or damaged value falls back to its default instead of breaking the map.
-  function normalizeConfig(options) {
-    const source = options && typeof options === `object` ? options : {};
-    const text = (value, max) => (typeof value === `string` ? value.slice(0, max) : ``);
-    const customMaps = (Array.isArray(source.customMaps) ? source.customMaps : [])
-      .filter((item) => item && typeof item.id === `string` && item.id.startsWith(`custom:`) &&
-        typeof item.name === `string` && typeof item.url === `string` && !catalog.validateTileUrl(item.url))
-      .slice(0, MAX_CUSTOM_MAPS)
-      .map((item) => ({
-        id: item.id.slice(0, 80), name: text(item.name, 80), url: item.url.slice(0, 500),
-        copyright: text(item.copyright, 200), key: text(item.key, 200),
-        kind: item.kind === `overlay` ? `overlay` : `base`
-      }));
-    const known = (id) => (typeof id === `string` && catalog.find(id, customMaps) ? id : null);
-    const opacity = Number(source.overlayOpacity);
-    const zoom = Number(source.defaultZoom);
-    return {
-      baseId: known(source.baseId) || DEFAULT_BASE_ID,
-      overlayId: known(source.overlayId),
-      overlayOpacity: Number.isFinite(opacity) ? Math.min(1, Math.max(0.1, opacity)) : DEFAULT_OPACITY,
-      defaultZoom: Number.isFinite(zoom) ? Math.min(20, Math.max(1, Math.round(zoom))) : DEFAULT_ZOOM,
-      showPopup: source.showPopup === undefined ? true : Boolean(source.showPopup),
-      customMaps
-    };
-  }
+  // Below this size of the map area, the catalogue opens in a separate window.
+  const SMALL_STAGE_HEIGHT = 560;
+  const SMALL_STAGE_WIDTH = 460;
 
   class MapApp {
     // host.onConfig(patch): a setting changed. host.onSelect(id): a pin was clicked.
@@ -57,10 +30,18 @@
       this.engine = new window.MapEngine(document.getElementById(`map`), {
         onSelect: (id) => { this.wanted = { id, pending: false }; host.onSelect(id); }
       });
-      this.menu = new CatalogMenu(() => this.config, (patch) => this.change(patch));
+      // In a small widget the catalogue opens in its own window; otherwise it opens in place.
+      this.menu = new CatalogMenu(() => this.config, (patch) => this.change(patch), {
+        onButton: () => {
+          const small = stage.clientHeight < SMALL_STAGE_HEIGHT || stage.clientWidth < SMALL_STAGE_WIDTH;
+          if (small && host.onCatalogWindow && host.onCatalogWindow()) return;
+          this.menu.toggle();
+        }
+      });
+      // The slider acts on the overlay layer when there is one, otherwise on the base map.
       this.slider = new TransparencyControl(
-        (opacity) => this.engine.setOverlayOpacity(opacity),
-        (opacity) => this.change({ overlayOpacity: opacity })
+        (opacity, target) => (target === `overlay` ? this.engine.setOverlayOpacity(opacity) : this.engine.setBaseOpacity(opacity)),
+        (opacity, target) => this.change(target === `overlay` ? { overlayOpacity: opacity } : { baseOpacity: opacity })
       );
 
       const windowButton = h(`button`, {
@@ -76,9 +57,10 @@
     }
 
     // A setting was changed by the user: apply it and tell the host to save it.
+    // The menu already shows the choice, so it is not drawn again.
     change(patch) {
       Object.assign(this.config, patch);
-      this.applyConfig();
+      this.applyConfig(false);
       this.host.onConfig(patch);
     }
 
@@ -88,19 +70,19 @@
       this.applyConfig();
     }
 
-    applyConfig() {
-      const { baseId, overlayId, overlayOpacity, defaultZoom, showPopup, customMaps } = this.config;
+    applyConfig(redrawMenu = true) {
+      const { baseId, overlayId, overlayOpacity, baseOpacity, defaultZoom, showPopup, customMaps } = this.config;
       const base = catalog.find(baseId, customMaps);
       const overlay = catalog.find(overlayId, customMaps);
-      this.engine.setBase(base);
+      this.engine.setBase(base, baseOpacity);
       this.engine.setOverlay(overlay, overlayOpacity);
       this.engine.setDefaultZoom(defaultZoom);
       this.engine.setShowPopup(showPopup);
-      this.slider.update(Boolean(overlay), overlayOpacity);
+      this.slider.update(overlay ? `overlay` : `base`, overlay ? overlayOpacity : baseOpacity);
       this.keyMessage = [base, overlay]
         .filter((entry) => entry && entry.needsKey && !entry.apiKey)
         .map((entry) => t(`needsApiKey`, { name: entry.title })).join(` `);
-      this.menu.render();
+      if (redrawMenu) this.menu.render();
       this.showBanner();
     }
 
@@ -167,5 +149,4 @@
   }
 
   window.MapApp = MapApp;
-  window.mapViewConfig = { normalizeConfig };
 })();

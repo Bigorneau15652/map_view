@@ -54,20 +54,27 @@
 
   class CatalogMenu {
     // getConfig(): current settings. onChange(patch): called with the settings that changed.
-    constructor(getConfig, onChange) {
+    // options.onButton(): replaces the default behaviour of the button (open the panel here).
+    // options.embedded: the panel fills its page (catalogue window): no button, always open.
+    constructor(getConfig, onChange, options) {
       this.getConfig = getConfig;
       this.onChange = onChange;
+      this.options = options || {};
       this.tab = `base`;
       this.query = ``;
       this.theme = ``;
 
       this.button = h(`button`, {
         type: `button`, class: `tool`, title: t(`openCatalog`), [`aria-label`]: t(`openCatalog`),
-        [`aria-expanded`]: `false`, onclick: () => this.toggle()
+        [`aria-expanded`]: `false`,
+        onclick: () => (this.options.onButton ? this.options.onButton() : this.toggle())
       }, icon(ICON_MAP));
-      this.panel = h(`div`, { class: `panel`, role: `dialog`, [`aria-label`]: t(`menuTitle`), hidden: true });
+      this.panel = h(`div`, {
+        class: this.options.embedded ? `panel full` : `panel`, role: `dialog`,
+        [`aria-label`]: t(`menuTitle`), hidden: !this.options.embedded
+      });
       document.addEventListener(`keydown`, (event) => {
-        if (event.key !== `Escape`) return;
+        if (event.key !== `Escape` || this.options.embedded) return;
         if (this.dialog) this.closeDialog();
         else if (!this.panel.hidden) this.toggle(false);
       });
@@ -83,6 +90,9 @@
     // Draws the whole panel again (cheap: long lists are built only when opened).
     render() {
       if (this.panel.hidden) return;
+      // Keep the scroll position of the list when the panel is drawn again.
+      const list = this.panel.querySelector(`.list`);
+      const scroll = list ? list.scrollTop : 0;
       this.panel.textContent = ``;
       const tabs = [[`base`, `tabBase`], [`overlay`, `tabOverlay`], [`settings`, `tabSettings`]];
       this.panel.append(
@@ -97,6 +107,8 @@
       );
       if (this.tab === `settings`) this.panel.append(this.settingsView());
       else this.panel.append(this.listView());
+      const newList = this.panel.querySelector(`.list`);
+      if (newList) newList.scrollTop = scroll;
     }
 
     // ---------------------------------------------------------------- List tabs
@@ -308,22 +320,21 @@
 
   // -------------------------------------------------------- Transparency slider
 
-  // Slider in the bottom-left corner. It acts on the overlay layer and is hidden without one.
+  // Slider in the bottom-left corner. It acts on the overlay layer when one is shown,
+  // otherwise on the base map.
   class TransparencyControl {
-    // onLive(opacity): called while dragging. onCommit(opacity): called when released.
+    // onLive(opacity, target): called while dragging. onCommit(opacity, target): called when
+    // released. target is `overlay` or `base`.
     constructor(onLive, onCommit) {
+      this.target = `base`;
       this.value = h(`span`, { class: `value` });
-      this.input = h(`input`, {
-        type: `range`, min: 0, max: Math.round(MAX_TRANSPARENCY * 100), step: 5, value: 0,
-        title: t(`transparencyTitle`), [`aria-label`]: t(`transparencyTitle`)
-      });
+      this.input = h(`input`, { type: `range`, min: 0, max: Math.round(MAX_TRANSPARENCY * 100), step: 5, value: 0 });
       this.input.addEventListener(`input`, () => {
         this.showValue();
-        onLive(this.opacity());
+        onLive(this.opacity(), this.target);
       });
-      this.input.addEventListener(`change`, () => onCommit(this.opacity()));
-      this.element = h(`div`, { class: `transparency`, hidden: true },
-        h(`span`, { text: t(`transparency`) }), this.input, this.value);
+      this.input.addEventListener(`change`, () => onCommit(this.opacity(), this.target));
+      this.element = h(`div`, { class: `transparency` }, h(`span`, { text: t(`transparency`) }), this.input, this.value);
     }
 
     opacity() {
@@ -334,9 +345,12 @@
       this.value.textContent = `${this.input.value} %`;
     }
 
-    // visible: whether an overlay is active. opacity: its current opacity (0 to 1).
-    update(visible, opacity) {
-      this.element.hidden = !visible;
+    // target: `overlay` or `base`. opacity: the current opacity of that layer (0 to 1).
+    update(target, opacity) {
+      this.target = target;
+      const title = t(target === `overlay` ? `transparencyTitle` : `transparencyBaseTitle`);
+      this.input.title = title;
+      this.input.setAttribute(`aria-label`, title);
       this.input.value = String(Math.round((1 - opacity) * 100));
       this.showValue();
     }

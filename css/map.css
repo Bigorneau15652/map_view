@@ -179,3 +179,11 @@ details.theme > summary { padding: 8px 4px; cursor: pointer; font-weight: 600; }
 }
 
 #tools[hidden] { display: none; }
+
+/* Catalogue window: the panel fills the whole page. */
+body.catalog-window { background: #ffffff; }
+#catalog-root { height: 100%; }
+.panel.full {
+  position: relative; top: auto; right: auto; width: auto; height: 100%; max-height: none;
+  border: 0; border-radius: 0; box-shadow: none;
+}
