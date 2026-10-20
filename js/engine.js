@@ -12,8 +12,7 @@
   const SELECTED_Z_OFFSET = 1000;
   const FRANCE_CENTER = [46.6, 2.4];
   const FRANCE_ZOOM = 5;
-  const USER_ACTION_WINDOW_MS = 2500;
-  const VIEW_SAVE_DELAY_MS = 800;
+  const VIEW_SAVE_DELAY_MS = 300;
 
   class MapEngine {
     // container: the element that receives the map.
@@ -29,7 +28,7 @@
       this.pendingView = null;       // saved view to restore when the first pins arrive
       this.hasFitted = false;        // the map is fitted on the pins only once, at the start
       this.suppressPan = false;      // the first selection must not move a restored view
-      this.lastUserAction = 0;
+      this.viewReady = false;        // true once the first view (saved or fitted) is in place
       this.viewTimer = null;
 
       this.map = L.map(container, { zoomControl: false, wheelPxPerZoomLevel: 90, maxZoom: MAX_ZOOM });
@@ -51,15 +50,14 @@
       });
       this.map.addLayer(this.cluster);
 
-      // The view (centre and zoom) is reported only after a move made by the user, never after
-      // a move made by the widget itself (first fit, selection of a row).
-      for (const name of [`pointerdown`, `wheel`, `touchstart`, `keydown`]) {
-        container.addEventListener(name, () => this.markUserAction(), { passive: true });
-      }
+      // Every change of the view (centre and zoom) is reported, so that the saved view is always
+      // the one shown on the map. Nothing is reported before the first view is in place.
       this.map.on(`moveend`, () => this._reportView());
       this.map.on(`zoomend`, () => {
         if (this.handlers.onZoom) this.handlers.onZoom(this.map.getZoom());
       });
+      // A pending save is written at once when the page is closed or hidden.
+      window.addEventListener(`pagehide`, () => this._flushView());
 
       // The accent colour of a label follows the colour of its pin.
       this.map.on(`popupopen`, (event) => {
@@ -130,13 +128,8 @@
 
     // ------------------------------------------------------------------- View
 
-    markUserAction() {
-      this.lastUserAction = Date.now();
-    }
-
     // Zoom chosen with the zoom slider.
     setZoom(zoom) {
-      this.markUserAction();
       this.map.setZoom(zoom);
     }
 
@@ -145,26 +138,17 @@
       this.pendingView = view;
     }
 
-    // Moves the map so that the selected pin is at the centre, keeping the zoom. With no
-    // selected pin, the centre of all the pins is used.
-    centerOnSelection() {
-      const selected = this.entries.get(this.selectedId);
-      let target = selected ? selected.marker.getLatLng() : null;
-      if (!target && this.entries.size) {
-        target = L.latLngBounds([...this.entries.values()].map((e) => e.marker.getLatLng())).getCenter();
-      }
-      if (!target) return;
-      this.markUserAction();
-      this.map.panTo(target);
+    _reportView() {
+      if (!this.handlers.onViewChange || !this.viewReady) return;
+      clearTimeout(this.viewTimer);
+      this.viewTimer = setTimeout(() => this._flushView(), VIEW_SAVE_DELAY_MS);
     }
 
-    _reportView() {
-      if (!this.handlers.onViewChange || Date.now() - this.lastUserAction > USER_ACTION_WINDOW_MS) return;
+    _flushView() {
+      if (!this.handlers.onViewChange || !this.viewReady) return;
       clearTimeout(this.viewTimer);
-      this.viewTimer = setTimeout(() => {
-        const center = this.map.getCenter();
-        this.handlers.onViewChange({ lat: center.lat, lng: center.lng, zoom: this.map.getZoom() });
-      }, VIEW_SAVE_DELAY_MS);
+      const center = this.map.getCenter();
+      this.handlers.onViewChange({ lat: center.lat, lng: center.lng, zoom: this.map.getZoom() });
     }
 
     // ------------------------------------------------------------------ Size
@@ -219,6 +203,8 @@
         } else {
           this._fit();
         }
+        // Moves made by the first positioning are not saved; later ones are.
+        setTimeout(() => { this.viewReady = true; }, 0);
       }
     }
 
@@ -298,10 +284,10 @@
       const touched = [previous, marker].filter(Boolean);
       if (touched.length) this.cluster.refreshClusters(touched);
       if (!marker || !(options && options.pan)) return;
-      // The first selection after a restored view only highlights the pin.
+      // The first selection after a restored view leaves the map alone when the pin is in view.
       if (this.suppressPan) {
         this.suppressPan = false;
-        return;
+        if (this.map.getBounds().contains(marker.getLatLng())) return;
       }
 
       // The zoom chosen by the user is kept. A pin hidden inside a cluster is only centred

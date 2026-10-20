@@ -45,7 +45,6 @@
   const ICON_EXPAND = [`M15 3h6v6`, `M9 21H3v-6`, `M21 3l-7 7`, `M3 21l7-7`];
   const ICON_DOCK = [`M14 10h6V4`, `M10 14H4v6`, `M20 4l-7 7`, `M4 20l7-7`];
   // A target: a circle with four ticks (centre on the selected pin).
-  const ICON_CENTER = [`M12 8a4 4 0 1 0 0 8a4 4 0 1 0 0-8z`, `M12 2v4`, `M12 18v4`, `M2 12h4`, `M18 12h4`];
 
   function newId() {
     return `custom:${window.crypto && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)}`;
@@ -351,5 +350,5 @@
     }
   }
 
-  window.mapViewMenu = { CatalogMenu, TransparencyControl, h, icon, ICON_EXPAND, ICON_DOCK, ICON_CENTER };
+  window.mapViewMenu = { CatalogMenu, TransparencyControl, h, icon, ICON_EXPAND, ICON_DOCK };
 })();
