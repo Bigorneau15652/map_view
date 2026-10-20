@@ -300,13 +300,18 @@
         return;
       }
 
-      const show = () => {
-        this.map.panTo(marker.getLatLng());
+      // The zoom chosen by the user is kept. A pin hidden inside a cluster is only centred
+      // (its cluster is highlighted); its label opens when the pin is visible.
+      this.map.panTo(marker.getLatLng());
+      if (marker._icon) {
         marker.openPopup();
-      };
-      // A pin hidden inside a cluster needs the map to zoom in on it first.
-      if (marker._icon) show();
-      else this.cluster.zoomToShowLayer(marker, show);
+        return;
+      }
+      // A pin outside the view is drawn once the map has moved; its label then opens, unless
+      // another row was selected in the meantime or the pin is still inside a cluster.
+      this.map.once(`moveend`, () => setTimeout(() => {
+        if (this.selectedId === id && marker._icon) marker.openPopup();
+      }, 0));
     }
 
     clearSelection() {
