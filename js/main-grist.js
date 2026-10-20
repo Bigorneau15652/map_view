@@ -3,7 +3,7 @@
 (function () {
   const { t } = window.mapViewI18n;
   const { normalize } = window.mapViewRecords;
-  const { normalizeConfig } = window.mapViewConfig;
+  const { normalizeConfig, sanitizePatch } = window.mapViewConfig;
 
   // What the separate window needs to draw the same map.
   const shared = {
@@ -17,7 +17,7 @@
     () => ({ ...shared }),
     {
       onSelect: (id) => selectRow(id),
-      onConfig: (patch) => app.change(patch),
+      onConfig: (patch) => applyWindowPatch(patch),
       onClosed: () => app.setDocked(false)
     }
   );
@@ -27,12 +27,18 @@
     { page: `catalog.html`, name: `map-view-catalogue`, width: 520, height: 820 },
     () => ({ config: shared.config }),
     {
-      onConfig: (patch) => app.change(patch),
+      onConfig: (patch) => applyWindowPatch(patch),
       onPreview: (draft) => app.preview(draft),
       // Whatever way the window closes, a choice that was not confirmed is dropped.
       onClosed: () => app.preview(null)
     }
   );
+
+  // A setting changed in another window is checked before it is applied and saved.
+  function applyWindowPatch(patch) {
+    const clean = sanitizePatch(app.config, patch);
+    if (Object.keys(clean).length) app.change(clean);
+  }
 
   // Sends the settings to the catalogue window after any change.
   function pushConfig() {

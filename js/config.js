@@ -35,5 +35,18 @@
     };
   }
 
-  window.mapViewConfig = { normalizeConfig };
+  // Checks a change received from another window: only the known settings are kept, each one
+  // is cleaned like a saved option, and anything else is dropped. current is the configuration
+  // in use, so that a change can refer to a map added in the same message.
+  function sanitizePatch(current, patch) {
+    if (!patch || typeof patch !== `object`) return {};
+    const clean = normalizeConfig({ ...current, ...patch });
+    const result = {};
+    for (const name of Object.keys(clean)) {
+      if (Object.prototype.hasOwnProperty.call(patch, name)) result[name] = clean[name];
+    }
+    return result;
+  }
+
+  window.mapViewConfig = { normalizeConfig, sanitizePatch };
 })();

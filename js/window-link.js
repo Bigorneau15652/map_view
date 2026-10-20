@@ -7,7 +7,7 @@
     // spec: { page, name, width, height } of the window. getState(): the full state to send.
     // handlers: onSelect(id), onConfig(patch), onClosed().
     constructor(spec, getState, handlers) {
-      this.url = new URL(`${spec.page}?v=0.4.3`, location.href).href;
+      this.url = new URL(`${spec.page}?v=0.4.4`, location.href).href;
       this.name = spec.name;
       this.size = { width: spec.width, height: spec.height };
       this.getState = getState;
@@ -59,7 +59,8 @@
 
     _onMessage(event) {
       if (!this.win || event.source !== this.win || event.origin !== location.origin || !event.data) return;
-      const { type, payload } = event.data;
+      const { type } = event.data;
+      const payload = event.data.payload || {};
       if (type === `mapview:window-ready`) this.send(`mapview:state`, this.getState());
       else if (type === `mapview:select`) this.handlers.onSelect && this.handlers.onSelect(payload.id);
       else if (type === `mapview:config`) this.handlers.onConfig(payload.patch);
