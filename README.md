@@ -15,9 +15,8 @@ A map widget for [Grist](https://www.getgrist.com): one pin per row, a label wit
 - An "Other..." button to add as many maps as you like (name, tile address, copyright, optional API key, base map or overlay). Each map can be edited with a pencil or deleted with a cross, and is kept in the widget options.
 - In a small widget, the catalogue opens in its own window so that it can be read in full; in a large area it opens in place.
 - The buttons and sliders fade after three seconds without movement over the map and come back at the next movement.
-- A target button centers the map on the selected pin, without changing the zoom.
 - A thin vertical zoom slider under the buttons at the top right (there are no + and - buttons).
-- The map reopens where you left it (centre and zoom). The view is kept in the browser of each user, not in the document, so that people do not change each other's view.
+- The map reopens where you left it (centre and zoom), and changing row keeps the zoom you chose. The view is kept in the browser of each user, not in the document, so that people do not change each other's view.
 - A button at the top right opens the map in a separate window, for example on a second screen. The window follows the row selected in Grist, and clicking a pin there selects the row in Grist. Closing the window, or the "put the map back" button, brings the map back into Grist.
 - Interface in French and English, chosen from the browser language.
 
@@ -65,7 +64,7 @@ The map is created once. Changing the base map, the overlay or the transparency 
 
 ### Releasing a change
 
-Browsers keep GitHub Pages files for about ten minutes. Scripts and styles are referenced with `?v=0.4.2`: change that number in `index.html`, `window.html`, `catalog.html` and `js/window-link.js` with every release.
+Browsers keep GitHub Pages files for about ten minutes. Scripts and styles are referenced with `?v=0.4.3`: change that number in `index.html`, `window.html`, `catalog.html` and `js/window-link.js` with every release.
 
 ### Files
 
@@ -89,9 +88,8 @@ Widget carte pour [Grist](https://www.getgrist.com) : une épingle par ligne, un
 - Un bouton « Autre… » pour ajouter autant de cartes que vous voulez (nom, adresse des tuiles, droits d'auteur, clé API facultative, fond ou couche superposée). Chaque carte peut être modifiée avec un crayon ou supprimée avec une croix, et est conservée dans les options du widget.
 - Dans un petit widget, le catalogue s'ouvre dans sa propre fenêtre pour pouvoir être lu en entier ; dans une grande zone, il s'ouvre sur place.
 - Les boutons et les réglettes s'effacent après trois secondes sans mouvement sur la carte et reviennent au mouvement suivant.
-- Un bouton en forme de viseur centre la carte sur l'épingle sélectionnée, sans changer le zoom.
 - Un curseur de zoom vertical fin sous les boutons en haut à droite (il n'y a pas de boutons + et −).
-- La carte se rouvre là où vous l'avez laissée (position et zoom). La vue est conservée dans le navigateur de chaque utilisateur, pas dans le document, pour que les personnes ne modifient pas la vue des autres.
+- La carte se rouvre là où vous l'avez laissée (position et zoom), et le changement de ligne conserve le zoom choisi. La vue est conservée dans le navigateur de chaque utilisateur, pas dans le document, pour que les personnes ne modifient pas la vue des autres.
 - Un bouton en haut à droite ouvre la carte dans une fenêtre séparée, par exemple sur un second écran. La fenêtre suit la ligne sélectionnée dans Grist, et un clic sur une épingle y sélectionne la ligne dans Grist. Fermer la fenêtre, ou le bouton « Réintégrer la carte », ramène la carte dans Grist.
 - Interface en français et en anglais, selon la langue du navigateur.
 

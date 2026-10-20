@@ -4,7 +4,7 @@
   const { t } = window.mapViewI18n;
   const catalog = window.mapViewCatalog;
   const { normalizeConfig } = window.mapViewConfig;
-  const { CatalogMenu, TransparencyControl, h, icon, ICON_EXPAND, ICON_DOCK, ICON_CENTER } = window.mapViewMenu;
+  const { CatalogMenu, TransparencyControl, h, icon, ICON_EXPAND, ICON_DOCK } = window.mapViewMenu;
 
   // Below this size of the map area, the catalogue opens in a separate window.
   const SMALL_STAGE_HEIGHT = 560;
@@ -57,13 +57,8 @@
         [`aria-label`]: t(mode === `window` ? `dockWindow` : `openWindow`),
         onclick: () => host.onWindowButton()
       }, icon(mode === `window` ? ICON_DOCK : ICON_EXPAND));
-      // The target button centres the map on the selected pin, without changing the zoom.
-      const centerButton = h(`button`, {
-        type: `button`, class: `tool`, title: t(`centerPin`), [`aria-label`]: t(`centerPin`),
-        onclick: () => this.engine.centerOnSelection()
-      }, icon(ICON_CENTER));
       this.tools = tools;
-      tools.append(this.menu.button, centerButton, windowButton);
+      tools.append(this.menu.button, windowButton);
 
       // Vertical zoom slider under the buttons.
       this.zoomInput = h(`input`, {
