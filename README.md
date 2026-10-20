@@ -70,7 +70,7 @@ Browsers keep GitHub Pages files for about ten minutes. Scripts and styles are r
 
 - `index.html`, `js/main-grist.js`: the widget (Grist connection, selection, separate window).
 - `window.html`, `js/main-window.js`: the separate map window. `catalog.html`, `js/main-catalog.js`: the catalogue window. `js/config.js`: reading of the saved settings.
-- `js/app.js`: the map screen shared by both. `js/engine.js`: the map and the pins. `js/menu.js`: catalogue, "Other" dialog, settings, transparency. `js/catalog.js`: maps and layers. `js/records.js`: reading and checking the rows. `js/colors.js`: pin colours. `js/i18n.js`: French and English texts. `js/window-link.js`: link with the separate window.
+- `js/app.js`: the map screen shared by both. `js/engine.js`: the map and the pins. `js/menu.js`: catalogue, "Other" dialog, transparency slider. `js/catalog.js`: maps and layers. `js/records.js`: reading and checking the rows. `js/colors.js`: pin colours. `js/i18n.js`: French and English texts. `js/window-link.js`: link with the separate window.
 - `data/ign-layers.js`: the IGN layers. `vendor`: Leaflet and Leaflet.markercluster.
 
 Licence: MIT. Leaflet is under the BSD 2-Clause licence and Leaflet.markercluster under the MIT licence.
@@ -124,5 +124,16 @@ Limite connue : la fenêtre séparée garde son lien avec le widget (`window.ope
 ### Performance
 
 La carte est créée une seule fois. Changer le fond, la couche superposée ou la transparence ne remplace que les tuiles. Modifier une cellule ne met à jour qu'une épingle. Des milliers d'épingles sont ajoutées par lots et regroupées. Les réglages sont enregistrés au relâchement d'une réglette, pas à chaque cran.
+
+### Publier une modification
+
+Les navigateurs gardent les fichiers de GitHub Pages environ dix minutes. Les scripts et les styles sont appelés avec `?v=0.4.3` : changez ce numéro dans `index.html`, `window.html`, `catalog.html` et `js/window-link.js` à chaque version.
+
+### Fichiers
+
+- `index.html`, `js/main-grist.js` : le widget (connexion à Grist, sélection, fenêtre séparée).
+- `window.html`, `js/main-window.js` : la fenêtre séparée de la carte. `catalog.html`, `js/main-catalog.js` : la fenêtre du catalogue. `js/config.js` : lecture des réglages enregistrés.
+- `js/app.js` : l'écran de carte commun aux deux. `js/engine.js` : la carte et les épingles. `js/menu.js` : catalogue, fenêtre « Autre », réglette de transparence. `js/catalog.js` : cartes et couches. `js/records.js` : lecture et contrôle des lignes. `js/colors.js` : couleurs des épingles. `js/i18n.js` : textes français et anglais. `js/window-link.js` : lien avec la fenêtre séparée.
+- `data/ign-layers.js` : les couches IGN. `vendor` : Leaflet et Leaflet.markercluster.
 
 Licence : MIT. Leaflet est sous licence BSD 2-Clause et Leaflet.markercluster sous licence MIT.

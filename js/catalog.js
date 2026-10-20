@@ -132,7 +132,6 @@
     validateTileUrl,
     tileUrl,
     thumbnailUrl,
-    escapeHtml,
     // Finds an entry by id, looking in the user maps when it is a custom one.
     find(id, customMaps) {
       if (!id) return null;
