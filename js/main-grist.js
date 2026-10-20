@@ -11,11 +11,28 @@
     selectedId: null, config: normalizeConfig({}), message: ``
   };
 
-  const link = new window.WindowLink(() => ({ ...shared }), {
-    onSelect: (id) => selectRow(id),
-    onConfig: (patch) => app.change(patch),
-    onClosed: () => app.setDocked(false)
-  });
+  // The separate map window.
+  const link = new window.WindowLink(
+    { page: `window.html`, name: `map-view-window`, width: 1200, height: 860 },
+    () => ({ ...shared }),
+    {
+      onSelect: (id) => selectRow(id),
+      onConfig: (patch) => app.change(patch),
+      onClosed: () => app.setDocked(false)
+    }
+  );
+
+  // The catalogue window, used when the widget is too small to hold the catalogue.
+  const catalogLink = new window.WindowLink(
+    { page: `catalog.html`, name: `map-view-catalogue`, width: 520, height: 820 },
+    () => ({ config: shared.config }),
+    { onConfig: (patch) => app.change(patch), onClosed: () => {} }
+  );
+
+  // Sends the settings to the catalogue window after any change.
+  function pushConfig() {
+    catalogLink.send(`mapview:state`, { config: shared.config });
+  }
 
   // Moves the Grist cursor to a row (when a pin is clicked, in the widget or in the window).
   function selectRow(id) {
@@ -29,8 +46,10 @@
       // Each setting is saved as its own widget option.
       for (const [name, value] of Object.entries(patch)) grist.setOption(name, value);
       link.send(`mapview:state`, { ...shared });
+      pushConfig();
     },
     onSelect: (id) => selectRow(id),
+    onCatalogWindow: () => catalogLink.open(),
     // The same button opens the window, and puts the map back when it is already open.
     onWindowButton: () => {
       if (link.isOpen) {
@@ -63,6 +82,7 @@
     shared.config = normalizeConfig(options);
     app.setConfig(shared.config);
     link.send(`mapview:state`, { ...shared });
+    pushConfig();
   });
 
   grist.onRecords((rows, mapping) => {

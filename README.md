@@ -11,8 +11,9 @@ A map widget for [Grist](https://www.getgrist.com): one pin per row, a label wit
 - One pin per row, with the colour taken from a column (HEX code or colour name, in French or English), and a label (title and description) shown when the row is selected.
 - Two-way selection: selecting a row moves the map to its pin, clicking a pin selects the row in Grist.
 - A map catalogue opened from a button with a map icon: reference maps with a preview image, a few open base maps (OpenStreetMap, CyclOSM, OpenTopoMap) and about 670 IGN layers sorted by theme and searchable.
-- A base map and one overlay layer at the same time (for example aerial photographs and cadastral parcels), with a transparency slider at the bottom left of the map.
+- A base map and one overlay layer at the same time (for example aerial photographs and cadastral parcels), with a transparency slider at the bottom left of the map (it acts on the overlay, or on the base map when there is no overlay).
 - An "Other..." entry to add your own map (name, tile address, copyright, optional API key, base map or overlay). The new map is added to the list and kept in the widget options.
+- In a small widget, the catalogue opens in its own window so that it can be read in full; in a large area it opens in place.
 - A button at the top right opens the map in a separate window, for example on a second screen. The window follows the row selected in Grist, and clicking a pin there selects the row in Grist. Closing the window, or the "put the map back" button, brings the map back into Grist.
 - Interface in French and English, chosen from the browser language.
 
@@ -60,12 +61,12 @@ The map is created once. Changing the base map, the overlay or the transparency 
 
 ### Releasing a change
 
-Browsers keep GitHub Pages files for about ten minutes. Scripts and styles are referenced with `?v=0.1.0`: change that number in `index.html`, `window.html` and `js/window-link.js` with every release.
+Browsers keep GitHub Pages files for about ten minutes. Scripts and styles are referenced with `?v=0.2.0`: change that number in `index.html`, `window.html`, `catalog.html` and `js/window-link.js` with every release.
 
 ### Files
 
 - `index.html`, `js/main-grist.js`: the widget (Grist connection, selection, separate window).
-- `window.html`, `js/main-window.js`: the separate map window.
+- `window.html`, `js/main-window.js`: the separate map window. `catalog.html`, `js/main-catalog.js`: the catalogue window. `js/config.js`: reading of the saved settings.
 - `js/app.js`: the map screen shared by both. `js/engine.js`: the map and the pins. `js/menu.js`: catalogue, "Other" dialog, settings, transparency. `js/catalog.js`: maps and layers. `js/records.js`: reading and checking the rows. `js/colors.js`: pin colours. `js/i18n.js`: French and English texts. `js/window-link.js`: link with the separate window.
 - `data/ign-layers.js`: the IGN layers. `vendor`: Leaflet and Leaflet.markercluster.
 
@@ -80,8 +81,9 @@ Widget carte pour [Grist](https://www.getgrist.com) : une épingle par ligne, un
 - Une épingle par ligne, dont la couleur vient d'une colonne (code HEX ou nom de couleur en français ou en anglais), et une étiquette (titre et description) affichée à la sélection de la ligne.
 - Sélection dans les deux sens : sélectionner une ligne amène la carte sur son épingle, cliquer une épingle sélectionne la ligne dans Grist.
 - Un catalogue de cartes ouvert par un bouton à pictogramme de carte : cartes de référence avec vignette, quelques fonds libres (OpenStreetMap, CyclOSM, OpenTopoMap) et environ 670 couches de l'IGN classées par thème, avec recherche.
-- Un fond de carte et une couche superposée en même temps (par exemple photographies aériennes et parcelles cadastrales), avec une réglette de transparence en bas à gauche de la carte.
+- Un fond de carte et une couche superposée en même temps (par exemple photographies aériennes et parcelles cadastrales), avec une réglette de transparence en bas à gauche de la carte (elle agit sur la couche superposée, ou sur le fond de carte quand il n'y en a pas).
 - Une entrée « Autre… » pour ajouter votre propre carte (nom, adresse des tuiles, droits d'auteur, clé API facultative, fond ou couche superposée). La carte s'ajoute à la liste et est conservée dans les options du widget.
+- Dans un petit widget, le catalogue s'ouvre dans sa propre fenêtre pour pouvoir être lu en entier ; dans une grande zone, il s'ouvre sur place.
 - Un bouton en haut à droite ouvre la carte dans une fenêtre séparée, par exemple sur un second écran. La fenêtre suit la ligne sélectionnée dans Grist, et un clic sur une épingle y sélectionne la ligne dans Grist. Fermer la fenêtre, ou le bouton « Réintégrer la carte », ramène la carte dans Grist.
 - Interface en français et en anglais, selon la langue du navigateur.
 

@@ -1,13 +1,15 @@
 // Widget side of the separate map window: opens it, keeps it up to date and listens to it.
 // Messages travel only between two pages of this same site, and only from the window we opened.
 (function () {
-  const WINDOW_NAME = `map-view-window`;
-  const WINDOW_URL = new URL(`window.html?v=0.1.0`, location.href).href;
   const POLL_MS = 1000;
 
   class WindowLink {
-    // getState(): the full state to send. handlers: onSelect(id), onConfig(patch), onClosed().
-    constructor(getState, handlers) {
+    // spec: { page, name, width, height } of the window. getState(): the full state to send.
+    // handlers: onSelect(id), onConfig(patch), onClosed().
+    constructor(spec, getState, handlers) {
+      this.url = new URL(`${spec.page}?v=0.2.0`, location.href).href;
+      this.name = spec.name;
+      this.size = { width: spec.width, height: spec.height };
       this.getState = getState;
       this.handlers = handlers;
       this.win = null;
@@ -19,13 +21,18 @@
       return Boolean(this.win) && !this.win.closed;
     }
 
-    // Opens (or reloads) the window. Returns false when the browser blocks it.
+    // Opens the window, or brings it to the front when it is already open.
+    // Returns false when the browser blocks it.
     open() {
-      const width = Math.min(1200, Math.max(600, screen.availWidth - 100));
-      const height = Math.min(860, Math.max(400, screen.availHeight - 100));
+      if (this.isOpen) {
+        this.win.focus();
+        return true;
+      }
+      const width = Math.min(this.size.width, Math.max(400, screen.availWidth - 100));
+      const height = Math.min(this.size.height, Math.max(400, screen.availHeight - 100));
       // The link between the window and the widget is kept on purpose: Grist runs widgets in a
       // sandboxed frame, which may only talk to windows it opened itself.
-      const opened = window.open(WINDOW_URL, WINDOW_NAME, `popup=yes,width=${width},height=${height},resizable=yes`);
+      const opened = window.open(this.url, this.name, `popup=yes,width=${width},height=${height},resizable=yes`);
       if (!opened) return false;
       this.win = opened;
       clearInterval(this.timer);
@@ -54,7 +61,7 @@
       if (!this.win || event.source !== this.win || event.origin !== location.origin || !event.data) return;
       const { type, payload } = event.data;
       if (type === `mapview:window-ready`) this.send(`mapview:state`, this.getState());
-      else if (type === `mapview:select`) this.handlers.onSelect(payload.id);
+      else if (type === `mapview:select`) this.handlers.onSelect && this.handlers.onSelect(payload.id);
       else if (type === `mapview:config`) this.handlers.onConfig(payload.patch);
       else if (type === `mapview:dock` || type === `mapview:closed`) this._closed();
     }

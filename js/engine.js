@@ -69,11 +69,11 @@
     }
 
     // Shows a base map (or none when the entry is null or lacks its key).
-    setBase(entry) {
+    setBase(entry, opacity) {
       if (this.baseLayer) this.map.removeLayer(this.baseLayer);
       this.baseLayer = null;
       if (!entry || (entry.needsKey && !entry.apiKey)) return;
-      this.baseLayer = this._makeTileLayer(entry, `tilePane`, 1).addTo(this.map);
+      this.baseLayer = this._makeTileLayer(entry, `tilePane`, opacity === undefined ? 1 : opacity).addTo(this.map);
     }
 
     // Shows an overlay layer above the base map with the given opacity (0 to 1).
@@ -82,6 +82,10 @@
       this.overlayLayer = null;
       if (!entry || (entry.needsKey && !entry.apiKey)) return;
       this.overlayLayer = this._makeTileLayer(entry, `overlayTiles`, opacity).addTo(this.map);
+    }
+
+    setBaseOpacity(opacity) {
+      if (this.baseLayer) this.baseLayer.setOpacity(opacity);
     }
 
     setOverlayOpacity(opacity) {

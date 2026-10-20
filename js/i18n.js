@@ -26,6 +26,7 @@
       windowWaiting: `En attente des données de Grist…`,
       transparency: `Transparence`,
       transparencyTitle: `Transparence de la couche superposée`,
+      transparencyBaseTitle: `Transparence du fond de carte (aucune couche superposée choisie)`,
 
       // Catalogue menu
       menuTitle: `Catalogue de cartes`,
@@ -114,6 +115,7 @@
       windowWaiting: `Waiting for data from Grist…`,
       transparency: `Transparency`,
       transparencyTitle: `Transparency of the overlay layer`,
+      transparencyBaseTitle: `Transparency of the base map (no overlay layer chosen)`,
 
       menuTitle: `Map catalogue`,
       close: `Close`,
