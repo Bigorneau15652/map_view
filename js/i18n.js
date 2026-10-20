@@ -24,6 +24,7 @@
       dockButton: `Réintégrer la carte`,
       windowBlocked: `Le navigateur a bloqué la fenêtre. Autorisez les fenêtres surgissantes pour ce site puis cliquez de nouveau sur le bouton.`,
       windowWaiting: `En attente des données de Grist…`,
+      zoomSlider: `Niveau de zoom`,
       transparency: `Transparence`,
       transparencyTitle: `Transparence de la couche superposée`,
       transparencyBaseTitle: `Transparence du fond de carte (aucune couche superposée choisie)`,
@@ -92,6 +93,8 @@
       // Settings tab
       zoomMax: `Zoom maximal à l'ouverture`,
       showPopup: `Afficher les étiquettes au survol / sélection`,
+      resetView: `Réinitialiser la vue enregistrée`,
+      resetViewNote: `La carte se rouvre là où vous l'avez laissée, sur cet ordinateur. Ce bouton la recadre sur l'ensemble des épingles.`,
       privacyNote: `Chaque fond de carte est chargé directement depuis le serveur de son fournisseur, qui voit l'adresse IP de l'utilisateur et la zone affichée. Les données du tableau ne sont jamais envoyées.`
     },
     en: {
@@ -113,6 +116,7 @@
       dockButton: `Put the map back`,
       windowBlocked: `The browser blocked the window. Allow pop-ups for this site then click the button again.`,
       windowWaiting: `Waiting for data from Grist…`,
+      zoomSlider: `Zoom level`,
       transparency: `Transparency`,
       transparencyTitle: `Transparency of the overlay layer`,
       transparencyBaseTitle: `Transparency of the base map (no overlay layer chosen)`,
@@ -177,6 +181,8 @@
 
       zoomMax: `Maximum zoom when opening`,
       showPopup: `Show labels on hover / selection`,
+      resetView: `Reset the saved view`,
+      resetViewNote: `The map reopens where you left it, on this computer. This button fits it to all the pins again.`,
       privacyNote: `Each base map is loaded directly from its provider server, which sees the user IP address and the displayed area. Table data is never sent.`
     }
   };

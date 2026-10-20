@@ -251,6 +251,9 @@
       return h(`div`, { class: `settings` },
         h(`label`, { class: `setting` }, h(`span`, { text: t(`zoomMax`) }), h(`span`, { class: `slider` }, zoom, zoomValue)),
         h(`label`, { class: `setting check` }, popup, h(`span`, { text: t(`showPopup`) })),
+        this.options.onResetView && h(`div`, { class: `setting` },
+          h(`button`, { type: `button`, class: `action`, text: t(`resetView`), onclick: () => this.options.onResetView() }),
+          h(`p`, { class: `note`, text: t(`resetViewNote`) })),
         h(`p`, { class: `note`, text: t(`privacyNote`) }));
     }
 

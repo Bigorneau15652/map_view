@@ -9,6 +9,8 @@
   // Below this size of the map area, the catalogue opens in a separate window.
   const SMALL_STAGE_HEIGHT = 560;
   const SMALL_STAGE_WIDTH = 460;
+  const MIN_SLIDER_ZOOM = 3;
+  const MAX_SLIDER_ZOOM = 20;
 
   class MapApp {
     // host.onConfig(patch): a setting changed. host.onSelect(id): a pin was clicked.
@@ -28,10 +30,13 @@
       const tools = document.getElementById(`tools`);
 
       this.engine = new window.MapEngine(document.getElementById(`map`), {
-        onSelect: (id) => { this.wanted = { id, pending: false }; host.onSelect(id); }
+        onSelect: (id) => { this.wanted = { id, pending: false }; host.onSelect(id); },
+        onViewChange: (view) => { if (host.onViewChange) host.onViewChange(view); },
+        onZoom: (zoom) => { this.zoomInput.value = String(zoom); }
       });
       // In a small widget the catalogue opens in its own window; otherwise it opens in place.
       this.menu = new CatalogMenu(() => this.config, (patch) => this.change(patch), {
+        onResetView: host.onResetView ? () => this.resetView() : null,
         onButton: () => {
           const small = stage.clientHeight < SMALL_STAGE_HEIGHT || stage.clientWidth < SMALL_STAGE_WIDTH;
           if (small && host.onCatalogWindow && host.onCatalogWindow()) return;
@@ -52,8 +57,28 @@
       }, icon(mode === `window` ? ICON_DOCK : ICON_EXPAND));
       this.tools = tools;
       tools.append(this.menu.button, windowButton);
-      stage.append(this.menu.panel, this.slider.element);
+
+      // Vertical zoom slider under the buttons; the stylesheet shows it only while the pointer
+      // is over the map.
+      this.zoomInput = h(`input`, {
+        type: `range`, min: MIN_SLIDER_ZOOM, max: MAX_SLIDER_ZOOM, step: 1, value: this.engine.map.getZoom(),
+        title: t(`zoomSlider`), [`aria-label`]: t(`zoomSlider`)
+      });
+      this.zoomInput.addEventListener(`input`, () => this.engine.setZoom(Number(this.zoomInput.value)));
+      this.zoomBox = h(`div`, { class: `zoom-slider` }, this.zoomInput);
+      stage.append(this.menu.panel, this.slider.element, this.zoomBox);
       this.applyConfig();
+    }
+
+    // The view saved at the last visit (centre and zoom).
+    restoreView(view) {
+      this.engine.restoreView(view);
+    }
+
+    // Forgets the saved view and fits all the pins again.
+    resetView() {
+      this.host.onResetView();
+      this.engine.fitAll();
     }
 
     // A setting was changed by the user: apply it and tell the host to save it.
@@ -130,6 +155,7 @@
     setDocked(docked) {
       this.docked = docked;
       this.tools.hidden = docked;
+      this.zoomBox.hidden = docked;
       if (docked) {
         this.menu.toggle(false);
         this.showMessage(t(`dockedMessage`), true);

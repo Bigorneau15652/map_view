@@ -187,3 +187,20 @@ body.catalog-window { background: #ffffff; }
   position: relative; top: auto; right: auto; width: auto; height: 100%; max-height: none;
   border: 0; border-radius: 0; box-shadow: none;
 }
+
+/* ------------------------------------------------------------ Zoom slider */
+/* Vertical slider under the tool buttons, shown only while the pointer is over the map
+   (always shown on touch screens, where there is no pointer to hover with). */
+.zoom-slider {
+  position: absolute; top: 54px; right: 10px; z-index: 900;
+  display: flex; padding: 10px 6px;
+  background: #ffffff; border: 2px solid var(--line); border-radius: 6px;
+  visibility: hidden;
+}
+.zoom-slider[hidden] { display: none; }
+.zoom-slider input {
+  height: 150px; width: 24px; margin: 0; padding: 0;
+  writing-mode: vertical-lr; direction: rtl; -webkit-appearance: slider-vertical;
+}
+#stage:hover .zoom-slider, .zoom-slider:focus-within { visibility: visible; }
+@media (hover: none) { .zoom-slider { visibility: visible; } }
