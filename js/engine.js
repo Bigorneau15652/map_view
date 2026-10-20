@@ -27,6 +27,7 @@
       this.baseKey = ``;
       this.overlayKey = ``;
       this.pendingView = null;       // saved view to restore when the first pins arrive
+      this.hasFitted = false;        // the map is fitted on the pins only once, at the start
       this.suppressPan = false;      // the first selection must not move a restored view
       this.lastUserAction = 0;
       this.viewTimer = null;
@@ -205,8 +206,11 @@
 
       if (toRemove.length) this.cluster.removeLayers(toRemove);
       if (toAdd.length) this.cluster.addLayers(toAdd);
-      // The view only moves when pins appear or disappear, not when a cell is edited.
-      if ((toAdd.length || toRemove.length) && this.entries.size) {
+      // The view is set once, when the first pins appear (saved view, or fit on all the pins).
+      // After that it only moves when the user moves it or when a row is selected: a table
+      // linked to another one replaces its rows at every selection, which must not change zoom.
+      if (!this.hasFitted && this.entries.size) {
+        this.hasFitted = true;
         if (this.pendingView) {
           const { lat, lng, zoom } = this.pendingView;
           this.map.setView([lat, lng], zoom, { animate: false });
