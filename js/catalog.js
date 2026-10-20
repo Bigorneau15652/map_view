@@ -1,46 +1,12 @@
 // Catalogue of maps: the built-in base maps, the IGN layers and the maps added by the user.
 // Every entry becomes a plain object with the same fields, whatever its origin:
 //   id, title, source, url (tile template), attribution (safe HTML), minZoom, maxNativeZoom,
-//   subdomains, theme, needsKey, custom, kind (`base` or `overlay`)
+//   subdomains, needsKey, custom (user maps also have kind: `base` or `overlay`)
 (function () {
   const IGN_ENDPOINT = `https://data.geopf.fr/wmts`;
   const THUMBNAIL_PLACE = { lat: 43.6112, lng: 3.8767 };
   const THUMBNAIL_ZOOM = 14;
   const SAMPLE_VALUES = { z: `5`, x: `15`, y: `10`, s: `a`, r: ``, [`-y`]: `10`, apikey: `key` };
-
-  // Order of the themes in the menu.
-  const THEMES = [
-    `maps`, `aerial`, `cadastre`, `admin`, `relief`, `old`, `edugeo`, `landcover`, `water`,
-    `forest`, `agri`, `transport`, `energy`, `nature`, `society`, `geology`, `other`
-  ];
-
-  // IGN layers shown first, with a preview image. Identifiers come from the Géoplateforme.
-  const IGN_REFERENCE_IDS = [
-    `GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2`,
-    `ORTHOIMAGERY.ORTHOPHOTOS`,
-    `CADASTRALPARCELS.PARCELLAIRE_EXPRESS`,
-    `ADMINEXPRESS-COG-CARTO.LATEST`,
-    `IGNF_PLAN-IGN-HD`,
-    `GEOGRAPHICALGRIDSYSTEMS.MAPS.BDUNI.J1`,
-    `ORTHOIMAGERY.ORTHOPHOTOS.1950-1965`,
-    `ORTHOIMAGERY.ORTHOPHOTOS.1965-1980`,
-    `ORTHOIMAGERY.ORTHOPHOTOS.1980-1995`,
-    `CADASTRALPARCELS.PARCELS`,
-    `CADASTRALPARCELS.HISTO.2008-2013.PARCELS`,
-    `GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN50.1950`,
-    `GEOGRAPHICALGRIDSYSTEMS.ETATMAJOR40`,
-    `BNF-IGNF_GEOGRAPHICALGRIDSYSTEMS.CASSINI`,
-    `TRANSPORTNETWORKS.ROADS`,
-    `IGNF_LIDARHD_MNT_ELEVATION.ELEVATIONGRIDCOVERAGE.SHADOW`,
-    `IGNF_LIDARHD_MNS_ELEVATION.ELEVATIONGRIDCOVERAGE.SHADOW`,
-    `ELEVATION.SLOPES`,
-    `ELEVATION.CONTOUR.LINE`,
-    `GEOGRAPHICALGRIDSYSTEMS.SLOPES.MOUNTAIN`,
-    `GEOGRAPHICALGRIDSYSTEMS.COASTALMAPS`,
-    `HYDROGRAPHY.HYDROGRAPHY`,
-    `LANDCOVER.FORESTINVENTORY.V2`,
-    `FORETS.PUBLIQUES`
-  ];
 
   // Base maps that need no key and whose terms were checked (see MAPS.md).
   // Attributions are fixed texts written here, never user data.
@@ -49,19 +15,19 @@
     {
       id: `osm-standard`, title: `OpenStreetMap Standard`, source: `OpenStreetMap`,
       url: `https://tile.openstreetmap.org/{z}/{x}/{y}.png`,
-      attribution: OSM_COPYRIGHT, maxNativeZoom: 19, theme: `maps`
+      attribution: OSM_COPYRIGHT, maxNativeZoom: 19
     },
     {
       id: `cyclosm`, title: `CyclOSM`, source: `OpenStreetMap France`,
       url: `https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png`, subdomains: `abc`,
       attribution: `<a href="https://github.com/cyclosm/cyclosm-cartocss-style/releases" target="_blank" rel="noopener noreferrer">CyclOSM</a> | ${OSM_COPYRIGHT}`,
-      maxNativeZoom: 20, theme: `maps`
+      maxNativeZoom: 20
     },
     {
       id: `opentopomap`, title: `OpenTopoMap`, source: `OpenTopoMap`,
       url: `https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png`, subdomains: `abc`,
       attribution: `${OSM_COPYRIGHT} | &copy; <a href="https://opentopomap.org" target="_blank" rel="noopener noreferrer">OpenTopoMap</a> (CC-BY-SA)`,
-      maxNativeZoom: 17, theme: `relief`
+      maxNativeZoom: 17
     }
   ].map((entry) => Object.assign({ minZoom: 0, needsKey: false, custom: false }, entry));
 
@@ -74,7 +40,7 @@
 
   // Turns a row of the generated IGN data into a catalogue entry.
   function ignEntry(row) {
-    const [layer, title, format, minZoom, maxZoom, style, theme, dataset] = row;
+    const [layer, title, format, minZoom, maxZoom, style, dataset] = row;
     const mime = format === `j` ? `image/jpeg` : `image/png`;
     const url = `${IGN_ENDPOINT}?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0` +
       `&LAYER=${encodeURIComponent(layer)}&STYLE=${encodeURIComponent(style)}` +
@@ -85,7 +51,7 @@
       : `IGN / Géoplateforme`;
     return {
       id: `ign:${layer}`, title, url, attribution: `&copy; ${link}`,
-      minZoom, maxNativeZoom: maxZoom, theme, needsKey: false, custom: false,
+      minZoom, maxNativeZoom: maxZoom, needsKey: false, custom: false,
       source: ``, isIgn: true
     };
   }
@@ -133,7 +99,7 @@
     return {
       id: item.id, title: String(item.name), url: String(item.url),
       attribution: escapeHtml(item.copyright || host), apiKey: String(item.key || ``),
-      minZoom: 0, maxNativeZoom: 19, theme: `other`, needsKey,
+      minZoom: 0, maxNativeZoom: 19, needsKey,
       custom: true, source: host, kind: item.kind === `overlay` ? `overlay` : `base`,
       subdomains: `abc`
     };
@@ -145,12 +111,6 @@
   const byId = new Map();
   for (const entry of BUILT_IN) byId.set(entry.id, entry);
   for (const entry of ignAll) byId.set(entry.id, entry);
-
-  const reference = IGN_REFERENCE_IDS
-    .map((layer) => byId.get(`ign:${layer}`))
-    .filter(Boolean);
-  const referenceSet = new Set(reference);
-  for (const entry of reference) entry.reference = true;
 
   // The tile address of a catalogue entry once its key (if any) is inserted.
   function tileUrl(entry) {
@@ -166,11 +126,8 @@
   }
 
   window.mapViewCatalog = {
-    THEMES,
     builtIn: BUILT_IN,
     ign: ignAll,
-    reference,
-    isReference: (entry) => referenceSet.has(entry),
     customEntry,
     validateTileUrl,
     tileUrl,
