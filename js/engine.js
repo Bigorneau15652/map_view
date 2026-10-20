@@ -11,6 +11,8 @@
   const SELECTED_Z_OFFSET = 1000;
   const FRANCE_CENTER = [46.6, 2.4];
   const FRANCE_ZOOM = 5;
+  const USER_ACTION_WINDOW_MS = 2500;
+  const VIEW_SAVE_DELAY_MS = 800;
 
   class MapEngine {
     // container: the element that receives the map.
@@ -23,6 +25,10 @@
       this.showPopup = true;
       this.baseLayer = null;
       this.overlayLayer = null;
+      this.pendingView = null;       // saved view to restore when the first pins arrive
+      this.suppressPan = false;      // the first selection must not move a restored view
+      this.lastUserAction = 0;
+      this.viewTimer = null;
 
       this.map = L.map(container, { wheelPxPerZoomLevel: 90, maxZoom: MAX_ZOOM });
       this.map.setView(FRANCE_CENTER, FRANCE_ZOOM);
@@ -42,6 +48,16 @@
         if (this.handlers.onSelect) this.handlers.onSelect(id);
       });
       this.map.addLayer(this.cluster);
+
+      // The view (centre and zoom) is reported only after a move made by the user, never after
+      // a move made by the widget itself (first fit, selection of a row).
+      for (const name of [`pointerdown`, `wheel`, `touchstart`, `keydown`]) {
+        container.addEventListener(name, () => this.markUserAction(), { passive: true });
+      }
+      this.map.on(`moveend`, () => this._reportView());
+      this.map.on(`zoomend`, () => {
+        if (this.handlers.onZoom) this.handlers.onZoom(this.map.getZoom());
+      });
 
       // The accent colour of a label follows the colour of its pin.
       this.map.on(`popupopen`, (event) => {
@@ -90,6 +106,37 @@
 
     setOverlayOpacity(opacity) {
       if (this.overlayLayer) this.overlayLayer.setOpacity(opacity);
+    }
+
+    // ------------------------------------------------------------------- View
+
+    markUserAction() {
+      this.lastUserAction = Date.now();
+    }
+
+    // Zoom chosen with the zoom slider.
+    setZoom(zoom) {
+      this.markUserAction();
+      this.map.setZoom(zoom);
+    }
+
+    // The view saved at the last visit: it replaces the automatic fit when the pins arrive.
+    restoreView(view) {
+      this.pendingView = view;
+    }
+
+    // Fits the whole set of pins again (after the saved view was cleared).
+    fitAll() {
+      if (this.entries.size) this._fit();
+    }
+
+    _reportView() {
+      if (!this.handlers.onViewChange || Date.now() - this.lastUserAction > USER_ACTION_WINDOW_MS) return;
+      clearTimeout(this.viewTimer);
+      this.viewTimer = setTimeout(() => {
+        const center = this.map.getCenter();
+        this.handlers.onViewChange({ lat: center.lat, lng: center.lng, zoom: this.map.getZoom() });
+      }, VIEW_SAVE_DELAY_MS);
     }
 
     // ---------------------------------------------------------------- Settings
@@ -141,7 +188,16 @@
       if (toRemove.length) this.cluster.removeLayers(toRemove);
       if (toAdd.length) this.cluster.addLayers(toAdd);
       // The view only moves when pins appear or disappear, not when a cell is edited.
-      if ((toAdd.length || toRemove.length) && this.entries.size) this._fit();
+      if ((toAdd.length || toRemove.length) && this.entries.size) {
+        if (this.pendingView) {
+          const { lat, lng, zoom } = this.pendingView;
+          this.map.setView([lat, lng], zoom, { animate: false });
+          this.pendingView = null;
+          this.suppressPan = true;
+        } else {
+          this._fit();
+        }
+      }
     }
 
     _makeMarker(point) {
@@ -220,6 +276,11 @@
       const touched = [previous, marker].filter(Boolean);
       if (touched.length) this.cluster.refreshClusters(touched);
       if (!marker || !(options && options.pan)) return;
+      // The first selection after a restored view only highlights the pin.
+      if (this.suppressPan) {
+        this.suppressPan = false;
+        return;
+      }
 
       const show = () => {
         this.map.panTo(marker.getLatLng());

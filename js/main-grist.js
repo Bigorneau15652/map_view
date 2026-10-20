@@ -26,12 +26,51 @@
   const catalogLink = new window.WindowLink(
     { page: `catalog.html`, name: `map-view-catalogue`, width: 520, height: 820 },
     () => ({ config: shared.config }),
-    { onConfig: (patch) => app.change(patch), onClosed: () => {} }
+    { onConfig: (patch) => app.change(patch), onResetView: () => app.resetView(), onClosed: () => {} }
   );
 
   // Sends the settings to the catalogue window after any change.
   function pushConfig() {
     catalogLink.send(`mapview:state`, { config: shared.config });
+  }
+
+  // ------------------------------------------------ View remembered in this browser
+
+  // The view (centre and zoom) is kept in the browser of each user, not in the document, so
+  // that people working on the same document do not change each other's view.
+  let viewKey = null;
+  let viewLoaded = false;
+
+  function readView() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(viewKey) || `null`);
+      const valid = saved && [saved.lat, saved.lng, saved.zoom].every(Number.isFinite);
+      return valid ? saved : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function writeView(view) {
+    try {
+      if (view) localStorage.setItem(viewKey, JSON.stringify(view));
+      else localStorage.removeItem(viewKey);
+    } catch {
+      // Storage can be blocked (private window, site data blocked): the map just opens fitted.
+    }
+  }
+
+  // Builds the storage key from the document and table names, then restores the saved view
+  // once, before the first pins are drawn.
+  async function loadViewOnce() {
+    if (viewLoaded) return;
+    viewLoaded = true;
+    const ask = async (fn) => { try { return String(await fn()); } catch { return ``; } };
+    const table = await ask(() => grist.selectedTable.getTableId());
+    const doc = await ask(() => grist.docApi.getDocName());
+    viewKey = `mapview:view:${doc}:${table}`;
+    const saved = readView();
+    if (saved) app.restoreView(saved);
   }
 
   // Moves the Grist cursor to a row (when a pin is clicked, in the widget or in the window).
@@ -50,6 +89,8 @@
     },
     onSelect: (id) => selectRow(id),
     onCatalogWindow: () => catalogLink.open(),
+    onViewChange: (view) => { if (viewKey !== null) writeView(view); },
+    onResetView: () => { if (viewKey !== null) writeView(null); },
     // The same button opens the window, and puts the map back when it is already open.
     onWindowButton: () => {
       if (link.isOpen) {
@@ -85,7 +126,8 @@
     pushConfig();
   });
 
-  grist.onRecords((rows, mapping) => {
+  grist.onRecords(async (rows, mapping) => {
+    await loadViewOnce();
     const mapped = grist.mapColumnNames(rows);
     if (!mapped) {
       shared.message = t(`needColumns`);

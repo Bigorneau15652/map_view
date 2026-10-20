@@ -14,6 +14,8 @@ A map widget for [Grist](https://www.getgrist.com): one pin per row, a label wit
 - A base map and one overlay layer at the same time (for example aerial photographs and cadastral parcels), with a transparency slider at the bottom left of the map (it acts on the overlay, or on the base map when there is no overlay).
 - An "Other..." entry to add your own map (name, tile address, copyright, optional API key, base map or overlay). The new map is added to the list and kept in the widget options.
 - In a small widget, the catalogue opens in its own window so that it can be read in full; in a large area it opens in place.
+- A vertical zoom slider under the buttons at the top right, shown only while the pointer is over the map.
+- The map reopens where you left it (centre and zoom). The view is kept in the browser of each user, not in the document, so that people do not change each other's view. A button in the Settings tab fits the map to all the pins again.
 - A button at the top right opens the map in a separate window, for example on a second screen. The window follows the row selected in Grist, and clicking a pin there selects the row in Grist. Closing the window, or the "put the map back" button, brings the map back into Grist.
 - Interface in French and English, chosen from the browser language.
 
@@ -84,6 +86,8 @@ Widget carte pour [Grist](https://www.getgrist.com) : une épingle par ligne, un
 - Un fond de carte et une couche superposée en même temps (par exemple photographies aériennes et parcelles cadastrales), avec une réglette de transparence en bas à gauche de la carte (elle agit sur la couche superposée, ou sur le fond de carte quand il n'y en a pas).
 - Une entrée « Autre… » pour ajouter votre propre carte (nom, adresse des tuiles, droits d'auteur, clé API facultative, fond ou couche superposée). La carte s'ajoute à la liste et est conservée dans les options du widget.
 - Dans un petit widget, le catalogue s'ouvre dans sa propre fenêtre pour pouvoir être lu en entier ; dans une grande zone, il s'ouvre sur place.
+- Un curseur de zoom vertical sous les boutons en haut à droite, affiché seulement quand le pointeur survole la carte.
+- La carte se rouvre là où vous l'avez laissée (position et zoom). La vue est conservée dans le navigateur de chaque utilisateur, pas dans le document, pour que les personnes ne modifient pas la vue des autres. Un bouton de l'onglet Réglages recadre la carte sur l'ensemble des épingles.
 - Un bouton en haut à droite ouvre la carte dans une fenêtre séparée, par exemple sur un second écran. La fenêtre suit la ligne sélectionnée dans Grist, et un clic sur une épingle y sélectionne la ligne dans Grist. Fermer la fenêtre, ou le bouton « Réintégrer la carte », ramène la carte dans Grist.
 - Interface en français et en anglais, selon la langue du navigateur.
 

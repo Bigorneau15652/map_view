@@ -63,6 +63,7 @@
       if (type === `mapview:window-ready`) this.send(`mapview:state`, this.getState());
       else if (type === `mapview:select`) this.handlers.onSelect && this.handlers.onSelect(payload.id);
       else if (type === `mapview:config`) this.handlers.onConfig(payload.patch);
+      else if (type === `mapview:reset-view`) this.handlers.onResetView && this.handlers.onResetView();
       else if (type === `mapview:dock` || type === `mapview:closed`) this._closed();
     }
   }
