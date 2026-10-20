@@ -4,7 +4,7 @@
   const { t } = window.mapViewI18n;
   const catalog = window.mapViewCatalog;
   const { normalizeConfig } = window.mapViewConfig;
-  const { CatalogMenu, TransparencyControl, h, icon, ICON_EXPAND, ICON_DOCK, ICON_FIT } = window.mapViewMenu;
+  const { CatalogMenu, TransparencyControl, h, icon, ICON_EXPAND, ICON_DOCK, ICON_CENTER } = window.mapViewMenu;
 
   // Below this size of the map area, the catalogue opens in a separate window.
   const SMALL_STAGE_HEIGHT = 560;
@@ -38,6 +38,7 @@
       });
       // In a small widget the catalogue opens in its own window; otherwise it opens in place.
       this.menu = new CatalogMenu(() => this.config, (patch) => this.change(patch), {
+        onPreview: (draft) => this.preview(draft),
         onButton: () => {
           const small = stage.clientHeight < SMALL_STAGE_HEIGHT || stage.clientWidth < SMALL_STAGE_WIDTH;
           if (small && host.onCatalogWindow && host.onCatalogWindow()) return;
@@ -56,13 +57,13 @@
         [`aria-label`]: t(mode === `window` ? `dockWindow` : `openWindow`),
         onclick: () => host.onWindowButton()
       }, icon(mode === `window` ? ICON_DOCK : ICON_EXPAND));
-      // The pin button fits the map to all the pins and forgets the remembered view.
-      const fitButton = h(`button`, {
-        type: `button`, class: `tool`, title: t(`fitPins`), [`aria-label`]: t(`fitPins`),
-        onclick: () => this.resetView()
-      }, icon(ICON_FIT));
+      // The target button centres the map on the selected pin, without changing the zoom.
+      const centerButton = h(`button`, {
+        type: `button`, class: `tool`, title: t(`centerPin`), [`aria-label`]: t(`centerPin`),
+        onclick: () => this.engine.centerOnSelection()
+      }, icon(ICON_CENTER));
       this.tools = tools;
-      tools.append(this.menu.button, fitButton, windowButton);
+      tools.append(this.menu.button, centerButton, windowButton);
 
       // Vertical zoom slider under the buttons.
       this.zoomInput = h(`input`, {
@@ -104,15 +105,28 @@
       this.engine.restoreView(view);
     }
 
-    // Forgets the saved view and fits all the pins again.
-    resetView() {
-      if (this.host.onResetView) this.host.onResetView();
-      this.engine.fitAll();
+    // Shows a pending choice of maps (before OK) without saving it; null puts back the saved
+    // maps. It does nothing when no preview is on, so a confirmed choice is not loaded twice.
+    preview(draft) {
+      if (!draft) {
+        if (!this.previewing) return;
+        this.previewing = false;
+        this.applyConfig(false);
+        return;
+      }
+      this.previewing = true;
+      const { customMaps, overlayOpacity, baseOpacity } = this.config;
+      const base = catalog.find(draft.baseId, customMaps);
+      const overlay = catalog.find(draft.overlayId, customMaps);
+      this.engine.setBase(base, baseOpacity);
+      this.engine.setOverlay(overlay, overlayOpacity);
+      this.slider.update(overlay ? `overlay` : `base`, overlay ? overlayOpacity : baseOpacity);
     }
 
     // A setting was changed by the user: apply it and tell the host to save it.
     // The menu already shows the choice, so it is not drawn again.
     change(patch) {
+      this.previewing = false;
       Object.assign(this.config, patch);
       this.applyConfig(false);
       this.host.onConfig(patch);
@@ -183,6 +197,7 @@
       this.docked = docked;
       this.tools.hidden = docked;
       if (docked) {
+        this.preview(null);
         this.menu.toggle(false);
         this.showMessage(t(`dockedMessage`), true);
         return;

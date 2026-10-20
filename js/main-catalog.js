@@ -16,7 +16,7 @@
   const menu = new CatalogMenu(() => config, (patch) => {
     config = { ...config, ...patch };
     toWidget(`mapview:config`, { patch });
-  }, { embedded: true });
+  }, { embedded: true, onPreview: (draft) => toWidget(`mapview:preview`, { draft }) });
   document.getElementById(`catalog-root`).append(menu.panel);
   menu.render();
 

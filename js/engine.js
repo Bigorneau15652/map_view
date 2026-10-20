@@ -24,6 +24,8 @@
       this.selectedId = null;
       this.baseLayer = null;
       this.overlayLayer = null;
+      this.baseKey = ``;
+      this.overlayKey = ``;
       this.pendingView = null;       // saved view to restore when the first pins arrive
       this.suppressPan = false;      // the first selection must not move a restored view
       this.lastUserAction = 0;
@@ -83,20 +85,38 @@
       });
     }
 
-    // Shows a base map (or none when the entry is null or lacks its key).
+    // Shows a base map (or none when the entry is null or lacks its key). The same map is
+    // not loaded twice: only its opacity is updated.
     setBase(entry, opacity) {
+      const wanted = this._layerKey(entry);
+      if (this.baseLayer && wanted === this.baseKey) {
+        this.baseLayer.setOpacity(opacity === undefined ? 1 : opacity);
+        return;
+      }
       if (this.baseLayer) this.map.removeLayer(this.baseLayer);
       this.baseLayer = null;
-      if (!entry || (entry.needsKey && !entry.apiKey)) return;
+      this.baseKey = wanted;
+      if (!wanted) return;
       this.baseLayer = this._makeTileLayer(entry, `tilePane`, opacity === undefined ? 1 : opacity).addTo(this.map);
     }
 
     // Shows an overlay layer above the base map with the given opacity (0 to 1).
     setOverlay(entry, opacity) {
+      const wanted = this._layerKey(entry);
+      if (this.overlayLayer && wanted === this.overlayKey) {
+        this.overlayLayer.setOpacity(opacity);
+        return;
+      }
       if (this.overlayLayer) this.map.removeLayer(this.overlayLayer);
       this.overlayLayer = null;
-      if (!entry || (entry.needsKey && !entry.apiKey)) return;
+      this.overlayKey = wanted;
+      if (!wanted) return;
       this.overlayLayer = this._makeTileLayer(entry, `overlayTiles`, opacity).addTo(this.map);
+    }
+
+    // Identifies what a layer shows (its tile address); empty when there is nothing to show.
+    _layerKey(entry) {
+      return !entry || (entry.needsKey && !entry.apiKey) ? `` : tileUrl(entry);
     }
 
     setBaseOpacity(opacity) {
@@ -124,9 +144,17 @@
       this.pendingView = view;
     }
 
-    // Fits the whole set of pins again (after the saved view was cleared).
-    fitAll() {
-      if (this.entries.size) this._fit();
+    // Moves the map so that the selected pin is at the centre, keeping the zoom. With no
+    // selected pin, the centre of all the pins is used.
+    centerOnSelection() {
+      const selected = this.entries.get(this.selectedId);
+      let target = selected ? selected.marker.getLatLng() : null;
+      if (!target && this.entries.size) {
+        target = L.latLngBounds([...this.entries.values()].map((e) => e.marker.getLatLng())).getCenter();
+      }
+      if (!target) return;
+      this.markUserAction();
+      this.map.panTo(target);
     }
 
     _reportView() {

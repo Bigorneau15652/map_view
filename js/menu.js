@@ -44,7 +44,8 @@
   const ICON_MAP = [`M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z`, `M9 4v14`, `M15 6v14`];
   const ICON_EXPAND = [`M15 3h6v6`, `M9 21H3v-6`, `M21 3l-7 7`, `M3 21l7-7`];
   const ICON_DOCK = [`M14 10h6V4`, `M10 14H4v6`, `M20 4l-7 7`, `M4 20l7-7`];
-  const ICON_FIT = [`M12 21s-6-5.5-6-10a6 6 0 0 1 12 0c0 4.5-6 10-6 10z`, `M12 8.5a2.5 2.5 0 1 0 0 5a2.5 2.5 0 1 0 0-5z`];
+  // A target: a circle with four ticks (centre on the selected pin).
+  const ICON_CENTER = [`M12 8a4 4 0 1 0 0 8a4 4 0 1 0 0-8z`, `M12 2v4`, `M12 18v4`, `M2 12h4`, `M18 12h4`];
 
   function newId() {
     return `custom:${window.crypto && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)}`;
@@ -58,6 +59,7 @@
     // getConfig(): current settings. onChange(patch): called with the settings that changed.
     // options.onButton(): replaces the default behaviour of the button (open the panel here).
     // options.embedded: the panel fills its page (catalogue window): no button, always open.
+    // options.onPreview(draft): shows the pending choice on the map before OK; null cancels it.
     constructor(getConfig, onChange, options) {
       this.getConfig = getConfig;
       this.onChange = onChange;
@@ -113,9 +115,15 @@
       this.finish();
     }
 
-    // Cancel: forget the choice, then close.
+    // Cancel: forget the choice (the map goes back to the saved one), then close.
     cancel() {
+      if (this.options.onPreview) this.options.onPreview(null);
       this.finish();
+    }
+
+    // Shows the pending choice on the map at once; nothing is saved before OK.
+    preview() {
+      if (this.options.onPreview) this.options.onPreview({ ...this.draft });
     }
 
     finish() {
@@ -179,7 +187,7 @@
     noneRow() {
       const radio = h(`input`, {
         type: `radio`, name: `pick-overlay`, checked: !this.draft.overlayId,
-        onchange: () => { this.draft.overlayId = null; }
+        onchange: () => { this.draft.overlayId = null; this.preview(); }
       });
       return h(`div`, { class: `row-wrap` },
         h(`label`, { class: `row` }, radio, h(`span`, { class: `thumb none`, text: `∅` }),
@@ -192,7 +200,7 @@
       const key = target === `base` ? `baseId` : `overlayId`;
       const radio = h(`input`, {
         type: `radio`, name: `pick-${target}`, checked: this.draft[key] === entry.id,
-        onchange: () => { this.draft[key] = entry.id; }
+        onchange: () => { this.draft[key] = entry.id; this.preview(); }
       });
 
       let thumb = h(`span`, { class: `thumb`, [`aria-hidden`]: `true` });
@@ -343,5 +351,5 @@
     }
   }
 
-  window.mapViewMenu = { CatalogMenu, TransparencyControl, h, icon, ICON_EXPAND, ICON_DOCK, ICON_FIT };
+  window.mapViewMenu = { CatalogMenu, TransparencyControl, h, icon, ICON_EXPAND, ICON_DOCK, ICON_CENTER };
 })();

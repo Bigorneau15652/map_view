@@ -26,7 +26,12 @@
   const catalogLink = new window.WindowLink(
     { page: `catalog.html`, name: `map-view-catalogue`, width: 520, height: 820 },
     () => ({ config: shared.config }),
-    { onConfig: (patch) => app.change(patch), onClosed: () => {} }
+    {
+      onConfig: (patch) => app.change(patch),
+      onPreview: (draft) => app.preview(draft),
+      // Whatever way the window closes, a choice that was not confirmed is dropped.
+      onClosed: () => app.preview(null)
+    }
   );
 
   // Sends the settings to the catalogue window after any change.
@@ -90,7 +95,6 @@
     onSelect: (id) => selectRow(id),
     onCatalogWindow: () => catalogLink.open(),
     onViewChange: (view) => { if (viewKey !== null) writeView(view); },
-    onResetView: () => { if (viewKey !== null) writeView(null); },
     // The same button opens the window, and puts the map back when it is already open.
     onWindowButton: () => {
       if (link.isOpen) {
