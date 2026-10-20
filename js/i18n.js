@@ -1,0 +1,194 @@
+// Minimal translation helper shared by the widget page and the separate map window.
+// The language is picked from the browser: French if it starts with "fr", English otherwise.
+(function () {
+  const dictionaries = {
+    fr: {
+      // Column mapping shown in the Grist creator panel
+      columnLongitude: `Longitude`,
+      columnLatitude: `Latitude`,
+      columnDescription: `Description (étiquette)`,
+      columnColor: `Couleur du pin (HEX ou nom)`,
+
+      // Data messages
+      noData: `Aucune donnée à afficher.`,
+      needColumns: `Associez les colonnes Name, Longitude et Latitude dans le panneau de droite, sous le niveau d'accès.`,
+      rowsIgnored: `{count} ligne(s) ignorée(s) : coordonnées invalides dans les colonnes « {lat} » et « {lng} » (exemples : {examples}). Vérifiez ces colonnes dans le tableau.`,
+      andOthers: `{examples} et {rest} autres`,
+      needsApiKey: `La carte « {name} » nécessite une clé API. Ouvrez le catalogue de cartes pour la renseigner.`,
+
+      // Tools
+      openCatalog: `Catalogue de cartes`,
+      openWindow: `Ouvrir la carte dans une fenêtre séparée`,
+      dockWindow: `Réintégrer la carte dans Grist`,
+      dockedMessage: `La carte est affichée dans une fenêtre séparée. Elle suit la ligne sélectionnée dans le tableau.`,
+      dockButton: `Réintégrer la carte`,
+      windowBlocked: `Le navigateur a bloqué la fenêtre. Autorisez les fenêtres surgissantes pour ce site puis cliquez de nouveau sur le bouton.`,
+      windowWaiting: `En attente des données de Grist…`,
+      transparency: `Transparence`,
+      transparencyTitle: `Transparence de la couche superposée`,
+
+      // Catalogue menu
+      menuTitle: `Catalogue de cartes`,
+      close: `Fermer`,
+      tabBase: `Fond de carte`,
+      tabOverlay: `Superposer`,
+      tabSettings: `Réglages`,
+      searchPlaceholder: `Rechercher une carte`,
+      themeAll: `Tous les thèmes`,
+      noOverlay: `Aucune couche superposée`,
+      sectionReference: `Cartes de référence`,
+      sectionBase: `Autres fonds de carte`,
+      sectionCustom: `Mes cartes`,
+      sectionIgn: `Toutes les cartes de l'IGN, par thème`,
+      sectionResults: `Résultats`,
+      moreResults: `Autres résultats non affichés : affinez la recherche.`,
+      noResults: `Aucune carte ne correspond.`,
+      sourceIgn: `Géoplateforme (IGN)`,
+      sourceCustom: `Carte ajoutée`,
+      needsKeyBadge: `clé API requise`,
+      deleteMap: `Supprimer cette carte`,
+      other: `Autre…`,
+
+      // Themes of the IGN catalogue
+      theme_maps: `Plans et cartes`,
+      theme_aerial: `Photographies aériennes`,
+      theme_cadastre: `Cadastre`,
+      theme_admin: `Limites administratives`,
+      theme_relief: `Relief et altitude`,
+      theme_old: `Cartes anciennes`,
+      theme_edugeo: `Cartes pédagogiques (Édugéo)`,
+      theme_landcover: `Occupation du sol`,
+      theme_water: `Hydrographie`,
+      theme_forest: `Forêts et végétation`,
+      theme_agri: `Agriculture`,
+      theme_transport: `Transports`,
+      theme_energy: `Énergie et climat`,
+      theme_nature: `Nature, risques et environnement`,
+      theme_society: `Statistiques et société`,
+      theme_geology: `Géologie`,
+      theme_other: `Autres`,
+
+      // "Other" dialog
+      dialogTitle: `Ajouter une carte`,
+      fieldName: `Nom de la carte`,
+      fieldUrl: `Adresse des tuiles`,
+      fieldUrlHelp: `Doit commencer par https:// et contenir {z}, {x} et {y}. Placez {apikey} à l'endroit de la clé, si la carte en demande une.`,
+      fieldCopyright: `Droits d'auteur à afficher`,
+      fieldKey: `Clé API (facultative)`,
+      fieldKeyHelp: `La clé est enregistrée en clair dans les options du widget, donc visible par les personnes qui ont accès au document. Restreignez-la à un domaine chez le fournisseur.`,
+      fieldType: `Type`,
+      typeBase: `Fond de carte`,
+      typeOverlay: `Couche superposée`,
+      cancel: `Annuler`,
+      create: `Nouveau`,
+      errName: `Saisissez un nom.`,
+      errUrl: `L'adresse doit commencer par https:// et être une adresse valide.`,
+      errUrlPlaceholders: `L'adresse doit contenir {z}, {x} et {y}.`,
+      errUrlOther: `L'adresse contient un marqueur non pris en charge : {name}.`,
+      errKeyMissing: `Cette carte nécessite une clé API : saisissez-la dans le champ Clé API.`,
+      errKeyUnused: `Une clé est saisie mais l'adresse ne contient pas {apikey} : ajoutez-le à l'endroit de la clé.`,
+
+      // Settings tab
+      zoomMax: `Zoom maximal à l'ouverture`,
+      showPopup: `Afficher les étiquettes au survol / sélection`,
+      privacyNote: `Chaque fond de carte est chargé directement depuis le serveur de son fournisseur, qui voit l'adresse IP de l'utilisateur et la zone affichée. Les données du tableau ne sont jamais envoyées.`
+    },
+    en: {
+      columnLongitude: `Longitude`,
+      columnLatitude: `Latitude`,
+      columnDescription: `Description (label)`,
+      columnColor: `Pin colour (HEX or name)`,
+
+      noData: `No data to show.`,
+      needColumns: `Map the Name, Longitude and Latitude columns in the right-hand panel, under the access level.`,
+      rowsIgnored: `{count} row(s) ignored: invalid coordinates in columns "{lat}" and "{lng}" (examples: {examples}). Check these columns in the table.`,
+      andOthers: `{examples} and {rest} more`,
+      needsApiKey: `The map "{name}" needs an API key. Open the map catalogue to enter it.`,
+
+      openCatalog: `Map catalogue`,
+      openWindow: `Open the map in a separate window`,
+      dockWindow: `Put the map back in Grist`,
+      dockedMessage: `The map is shown in a separate window. It follows the row selected in the table.`,
+      dockButton: `Put the map back`,
+      windowBlocked: `The browser blocked the window. Allow pop-ups for this site then click the button again.`,
+      windowWaiting: `Waiting for data from Grist…`,
+      transparency: `Transparency`,
+      transparencyTitle: `Transparency of the overlay layer`,
+
+      menuTitle: `Map catalogue`,
+      close: `Close`,
+      tabBase: `Base map`,
+      tabOverlay: `Overlay`,
+      tabSettings: `Settings`,
+      searchPlaceholder: `Search a map`,
+      themeAll: `All themes`,
+      noOverlay: `No overlay layer`,
+      sectionReference: `Reference maps`,
+      sectionBase: `Other base maps`,
+      sectionCustom: `My maps`,
+      sectionIgn: `All IGN maps, by theme`,
+      sectionResults: `Results`,
+      moreResults: `More results are hidden: refine the search.`,
+      noResults: `No map matches.`,
+      sourceIgn: `Géoplateforme (IGN)`,
+      sourceCustom: `Added map`,
+      needsKeyBadge: `API key required`,
+      deleteMap: `Delete this map`,
+      other: `Other…`,
+
+      theme_maps: `Plans and maps`,
+      theme_aerial: `Aerial photographs`,
+      theme_cadastre: `Cadastre`,
+      theme_admin: `Administrative boundaries`,
+      theme_relief: `Relief and elevation`,
+      theme_old: `Historical maps`,
+      theme_edugeo: `Educational maps (Édugéo)`,
+      theme_landcover: `Land cover`,
+      theme_water: `Hydrography`,
+      theme_forest: `Forests and vegetation`,
+      theme_agri: `Agriculture`,
+      theme_transport: `Transport`,
+      theme_energy: `Energy and climate`,
+      theme_nature: `Nature, risks and environment`,
+      theme_society: `Statistics and society`,
+      theme_geology: `Geology`,
+      theme_other: `Other`,
+
+      dialogTitle: `Add a map`,
+      fieldName: `Map name`,
+      fieldUrl: `Tile address`,
+      fieldUrlHelp: `Must start with https:// and contain {z}, {x} and {y}. Put {apikey} where the key goes, if the map needs one.`,
+      fieldCopyright: `Copyright to display`,
+      fieldKey: `API key (optional)`,
+      fieldKeyHelp: `The key is stored in clear text in the widget options, so people with access to the document can see it. Restrict it to a domain at the provider.`,
+      fieldType: `Type`,
+      typeBase: `Base map`,
+      typeOverlay: `Overlay layer`,
+      cancel: `Cancel`,
+      create: `New`,
+      errName: `Enter a name.`,
+      errUrl: `The address must start with https:// and be a valid address.`,
+      errUrlPlaceholders: `The address must contain {z}, {x} and {y}.`,
+      errUrlOther: `The address contains an unsupported marker: {name}.`,
+      errKeyMissing: `This map needs an API key: enter it in the API key field.`,
+      errKeyUnused: `A key is entered but the address has no {apikey}: add it where the key goes.`,
+
+      zoomMax: `Maximum zoom when opening`,
+      showPopup: `Show labels on hover / selection`,
+      privacyNote: `Each base map is loaded directly from its provider server, which sees the user IP address and the displayed area. Table data is never sent.`
+    }
+  };
+
+  const lang = String(navigator.language || ``).toLowerCase().startsWith(`fr`) ? `fr` : `en`;
+
+  // Returns the translated text for a key, replacing each {name} with values[name].
+  function t(key, values) {
+    const template = dictionaries[lang][key];
+    if (template === undefined) return key;
+    return template.replace(/\{(\w+)\}/g, (match, name) =>
+      values && values[name] !== undefined ? String(values[name]) : match
+    );
+  }
+
+  window.mapViewI18n = { t, lang };
+})();
