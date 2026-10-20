@@ -42,29 +42,14 @@
     `FORETS.PUBLIQUES`
   ];
 
-  // Base maps that need no key. Attributions are fixed texts written here, never user data.
+  // Base maps that need no key and whose terms were checked (see MAPS.md).
+  // Attributions are fixed texts written here, never user data.
   const OSM_COPYRIGHT = `&copy; <a href="https://openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>`;
   const BUILT_IN = [
-    {
-      id: `esri-street`, title: `Esri Street Map`, source: `Esri`,
-      url: `https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}`,
-      attribution: `Tiles &copy; Esri`, maxNativeZoom: 17, theme: `maps`
-    },
     {
       id: `osm-standard`, title: `OpenStreetMap Standard`, source: `OpenStreetMap`,
       url: `https://tile.openstreetmap.org/{z}/{x}/{y}.png`,
       attribution: OSM_COPYRIGHT, maxNativeZoom: 19, theme: `maps`
-    },
-    {
-      id: `osm-france`, title: `OpenStreetMap France`, source: `OpenStreetMap France`,
-      url: `https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png`, subdomains: `abc`,
-      attribution: `&copy; OpenStreetMap France | ${OSM_COPYRIGHT}`, maxNativeZoom: 20, theme: `maps`
-    },
-    {
-      id: `osm-hot`, title: `Humanitarian OpenStreetMap (HOT)`, source: `OpenStreetMap France`,
-      url: `https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png`, subdomains: `abc`,
-      attribution: `${OSM_COPYRIGHT}, tiles by <a href="https://hot.openstreetmap.org" target="_blank" rel="noopener noreferrer">HOT</a>`,
-      maxNativeZoom: 19, theme: `maps`
     },
     {
       id: `cyclosm`, title: `CyclOSM`, source: `OpenStreetMap France`,
@@ -73,26 +58,10 @@
       maxNativeZoom: 20, theme: `maps`
     },
     {
-      id: `waymarked-cycling`, title: `Waymarked Trails, cycling routes`, source: `Waymarked Trails`,
-      url: `https://tile.waymarkedtrails.org/cycling/{z}/{x}/{y}.png`,
-      attribution: `${OSM_COPYRIGHT} &amp; <a href="https://cycling.waymarkedtrails.org" target="_blank" rel="noopener noreferrer">Waymarked Trails</a>`,
-      maxNativeZoom: 18, theme: `transport`
-    },
-    {
       id: `opentopomap`, title: `OpenTopoMap`, source: `OpenTopoMap`,
       url: `https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png`, subdomains: `abc`,
       attribution: `${OSM_COPYRIGHT} | &copy; <a href="https://opentopomap.org" target="_blank" rel="noopener noreferrer">OpenTopoMap</a> (CC-BY-SA)`,
       maxNativeZoom: 17, theme: `relief`
-    },
-    {
-      id: `esri-satellite`, title: `Esri World Imagery`, source: `Esri`,
-      url: `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}`,
-      attribution: `Tiles &copy; Esri`, maxNativeZoom: 18, theme: `aerial`
-    },
-    {
-      id: `esri-topo`, title: `Esri World Topo Map`, source: `Esri`,
-      url: `https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}`,
-      attribution: `Tiles &copy; Esri`, maxNativeZoom: 18, theme: `relief`
     }
   ].map((entry) => Object.assign({ minZoom: 0, needsKey: false, custom: false }, entry));
 

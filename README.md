@@ -10,7 +10,7 @@ A map widget for [Grist](https://www.getgrist.com): one pin per row, a label wit
 
 - One pin per row, with the colour taken from a column (HEX code or colour name, in French or English), and a label (title and description) shown when the row is selected.
 - Two-way selection: selecting a row moves the map to its pin, clicking a pin selects the row in Grist.
-- A map catalogue opened from a button with a map icon: reference maps with a preview image, other base maps, and about 670 IGN layers sorted by theme and searchable.
+- A map catalogue opened from a button with a map icon: reference maps with a preview image, a few open base maps (OpenStreetMap, CyclOSM, OpenTopoMap) and about 670 IGN layers sorted by theme and searchable.
 - A base map and one overlay layer at the same time (for example aerial photographs and cadastral parcels), with a transparency slider at the bottom left of the map.
 - An "Other..." entry to add your own map (name, tile address, copyright, optional API key, base map or overlay). The new map is added to the list and kept in the widget options.
 - A button at the top right opens the map in a separate window, for example on a second screen. The window follows the row selected in Grist, and clicking a pin there selects the row in Grist. Closing the window, or the "put the map back" button, brings the map back into Grist.
@@ -40,7 +40,7 @@ A row without coordinates (empty or 0 and 0) is skipped silently. A row whose co
 
 ### Maps and rights
 
-No map is stored in this repository. The list of maps, the provider of each one and what is known about their terms are in [MAPS.md](MAPS.md). The IGN layers come from the public Géoplateforme service and need no key; their list was read on 2026-10-20 (see `data/README.md`). TOPO 25 and the "Cartes IGN" layers are not part of that public service.
+No map is stored in this repository. The list of maps, the provider of each one and what is known about their terms are in [MAPS.md](MAPS.md). The IGN layers come from the public Géoplateforme service and need no key; their list was read on 2026-10-20 (see `data/README.md`). TOPO 25 and the "Cartes IGN" layers are not part of that public service. Maps whose terms could not be confirmed (Esri and others) are not included: see "Not included" in [MAPS.md](MAPS.md).
 
 ### Adding a map with "Other..."
 
@@ -79,7 +79,7 @@ Widget carte pour [Grist](https://www.getgrist.com) : une épingle par ligne, un
 
 - Une épingle par ligne, dont la couleur vient d'une colonne (code HEX ou nom de couleur en français ou en anglais), et une étiquette (titre et description) affichée à la sélection de la ligne.
 - Sélection dans les deux sens : sélectionner une ligne amène la carte sur son épingle, cliquer une épingle sélectionne la ligne dans Grist.
-- Un catalogue de cartes ouvert par un bouton à pictogramme de carte : cartes de référence avec vignette, autres fonds de carte et environ 670 couches de l'IGN classées par thème, avec recherche.
+- Un catalogue de cartes ouvert par un bouton à pictogramme de carte : cartes de référence avec vignette, quelques fonds libres (OpenStreetMap, CyclOSM, OpenTopoMap) et environ 670 couches de l'IGN classées par thème, avec recherche.
 - Un fond de carte et une couche superposée en même temps (par exemple photographies aériennes et parcelles cadastrales), avec une réglette de transparence en bas à gauche de la carte.
 - Une entrée « Autre… » pour ajouter votre propre carte (nom, adresse des tuiles, droits d'auteur, clé API facultative, fond ou couche superposée). La carte s'ajoute à la liste et est conservée dans les options du widget.
 - Un bouton en haut à droite ouvre la carte dans une fenêtre séparée, par exemple sur un second écran. La fenêtre suit la ligne sélectionnée dans Grist, et un clic sur une épingle y sélectionne la ligne dans Grist. Fermer la fenêtre, ou le bouton « Réintégrer la carte », ramène la carte dans Grist.
@@ -101,7 +101,7 @@ Les colonnes sont celles du tableau ci-dessus. Une ligne sans coordonnées (vide
 
 ### Cartes et droits
 
-Aucune carte n'est stockée dans ce dépôt. La liste des cartes, le fournisseur de chacune et ce que l'on sait de leurs conditions sont dans [MAPS.md](MAPS.md). Les couches IGN viennent du service public Géoplateforme et ne demandent aucune clé ; leur liste a été lue le 20 octobre 2026 (voir `data/README.md`). Les couches TOPO 25 et « Cartes IGN » ne font pas partie de ce service public.
+Aucune carte n'est stockée dans ce dépôt. La liste des cartes, le fournisseur de chacune et ce que l'on sait de leurs conditions sont dans [MAPS.md](MAPS.md). Les couches IGN viennent du service public Géoplateforme et ne demandent aucune clé ; leur liste a été lue le 20 octobre 2026 (voir `data/README.md`). Les couches TOPO 25 et « Cartes IGN » ne font pas partie de ce service public. Les cartes dont les conditions n'ont pas pu être confirmées (Esri et d'autres) ne sont pas incluses : voir « Cartes non incluses » dans [MAPS.md](MAPS.md).
 
 ### Ajouter une carte avec « Autre… »
 
