@@ -12,7 +12,7 @@
   const SELECTED_Z_OFFSET = 1000;
   const FRANCE_CENTER = [46.6, 2.4];
   const FRANCE_ZOOM = 5;
-  const VIEW_SAVE_DELAY_MS = 300;
+  const VIEW_SAVE_DELAY_MS = 800;
 
   class MapEngine {
     // container: the element that receives the map.
