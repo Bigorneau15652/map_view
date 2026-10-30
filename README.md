@@ -16,7 +16,7 @@ A map widget for [Grist](https://www.getgrist.com): one pin per row, a label wit
 - In a small widget, the catalogue opens in its own window so that it can be read in full; in a large area it opens in place.
 - The buttons and sliders fade after three seconds without movement over the map and come back at the next movement.
 - A thin vertical zoom slider under the buttons at the top right (there are no + and - buttons).
-- The map reopens where you left it (centre and zoom), and changing row keeps the zoom you chose. The view is kept in the browser of each user, not in the document, so that people do not change each other's view.
+- The map reopens where you left it (centre and zoom), and changing row keeps the zoom you chose. The view is saved in the options of the widget, so in the document: it is found again when you leave the page and come back, in any browser. Everyone who opens the document gets the last saved view.
 - A button at the top right opens the map in a separate window, for example on a second screen. The window follows the row selected in Grist, and clicking a pin there selects the row in Grist. Closing the window, or the "put the map back" button, brings the map back into Grist.
 - Interface in French and English, chosen from the browser language.
 
@@ -64,14 +64,16 @@ The map is created once. Changing the base map, the overlay or the transparency 
 
 ### Releasing a change
 
-Browsers keep GitHub Pages files for about ten minutes. Scripts and styles are referenced with `?v=0.4.4`: change that number in `index.html`, `window.html`, `catalog.html` and `js/window-link.js` with every release.
+Browsers keep GitHub Pages files for about ten minutes. Scripts and styles are referenced with `?v=0.4.5`: change that number in `index.html`, `window.html`, `catalog.html` and `js/window-link.js` with every release.
 
 ### Files
 
 - `index.html`, `js/main-grist.js`: the widget (Grist connection, selection, separate window).
-- `window.html`, `js/main-window.js`: the separate map window. `catalog.html`, `js/main-catalog.js`: the catalogue window. `js/config.js`: reading of the saved settings.
+- `window.html`, `js/main-window.js`: the separate map window. `catalog.html`, `js/main-catalog.js`: the catalogue window. `js/config.js`: reading of the saved settings. `js/view.js`: reading of the saved view (centre and zoom).
 - `js/app.js`: the map screen shared by both. `js/engine.js`: the map and the pins. `js/menu.js`: catalogue, "Other" dialog, transparency slider. `js/catalog.js`: maps and layers. `js/records.js`: reading and checking the rows. `js/colors.js`: pin colours. `js/i18n.js`: French and English texts. `js/window-link.js`: link with the separate window.
 - `data/ign-layers.js`: the IGN layers. `vendor`: Leaflet and Leaflet.markercluster.
+
+Tests: `npm test` runs the unit tests with Node. `npm run test:integration` runs the browser tests (run `npm install` once; set `CHROMIUM_PATH` to use an existing Chromium).
 
 Licence: MIT. Leaflet is under the BSD 2-Clause licence and Leaflet.markercluster under the MIT licence.
 
@@ -89,7 +91,7 @@ Widget carte pour [Grist](https://www.getgrist.com) : une épingle par ligne, un
 - Dans un petit widget, le catalogue s'ouvre dans sa propre fenêtre pour pouvoir être lu en entier ; dans une grande zone, il s'ouvre sur place.
 - Les boutons et les réglettes s'effacent après trois secondes sans mouvement sur la carte et reviennent au mouvement suivant.
 - Un curseur de zoom vertical fin sous les boutons en haut à droite (il n'y a pas de boutons + et −).
-- La carte se rouvre là où vous l'avez laissée (position et zoom), et le changement de ligne conserve le zoom choisi. La vue est conservée dans le navigateur de chaque utilisateur, pas dans le document, pour que les personnes ne modifient pas la vue des autres.
+- La carte se rouvre là où vous l'avez laissée (position et zoom), et le changement de ligne conserve le zoom choisi. La vue est enregistrée dans les options du widget, donc dans le document : elle est retrouvée quand vous quittez la page puis que vous revenez, dans n'importe quel navigateur. Toute personne qui ouvre le document retrouve la dernière vue enregistrée.
 - Un bouton en haut à droite ouvre la carte dans une fenêtre séparée, par exemple sur un second écran. La fenêtre suit la ligne sélectionnée dans Grist, et un clic sur une épingle y sélectionne la ligne dans Grist. Fermer la fenêtre, ou le bouton « Réintégrer la carte », ramène la carte dans Grist.
 - Interface en français et en anglais, selon la langue du navigateur.
 
@@ -127,13 +129,15 @@ La carte est créée une seule fois. Changer le fond, la couche superposée ou l
 
 ### Publier une modification
 
-Les navigateurs gardent les fichiers de GitHub Pages environ dix minutes. Les scripts et les styles sont appelés avec `?v=0.4.4` : changez ce numéro dans `index.html`, `window.html`, `catalog.html` et `js/window-link.js` à chaque version.
+Les navigateurs gardent les fichiers de GitHub Pages environ dix minutes. Les scripts et les styles sont appelés avec `?v=0.4.5` : changez ce numéro dans `index.html`, `window.html`, `catalog.html` et `js/window-link.js` à chaque version.
 
 ### Fichiers
 
 - `index.html`, `js/main-grist.js` : le widget (connexion à Grist, sélection, fenêtre séparée).
-- `window.html`, `js/main-window.js` : la fenêtre séparée de la carte. `catalog.html`, `js/main-catalog.js` : la fenêtre du catalogue. `js/config.js` : lecture des réglages enregistrés.
+- `window.html`, `js/main-window.js` : la fenêtre séparée de la carte. `catalog.html`, `js/main-catalog.js` : la fenêtre du catalogue. `js/config.js` : lecture des réglages enregistrés. `js/view.js` : lecture de la vue enregistrée (position et zoom).
 - `js/app.js` : l'écran de carte commun aux deux. `js/engine.js` : la carte et les épingles. `js/menu.js` : catalogue, fenêtre « Autre », réglette de transparence. `js/catalog.js` : cartes et couches. `js/records.js` : lecture et contrôle des lignes. `js/colors.js` : couleurs des épingles. `js/i18n.js` : textes français et anglais. `js/window-link.js` : lien avec la fenêtre séparée.
 - `data/ign-layers.js` : les couches IGN. `vendor` : Leaflet et Leaflet.markercluster.
+
+Tests : `npm test` lance les tests unitaires avec Node. `npm run test:integration` lance les tests dans un navigateur (lancez une fois `npm install` ; `CHROMIUM_PATH` indique un Chromium existant).
 
 Licence : MIT. Leaflet est sous licence BSD 2-Clause et Leaflet.markercluster sous licence MIT.

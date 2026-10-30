@@ -4,6 +4,7 @@
   const { t } = window.mapViewI18n;
   const { normalize } = window.mapViewRecords;
   const { normalizeConfig, sanitizePatch } = window.mapViewConfig;
+  const { readSavedView, roundView } = window.mapViewView;
 
   // What the separate window needs to draw the same map.
   const shared = {
@@ -45,43 +46,28 @@
     catalogLink.send(`mapview:state`, { config: shared.config });
   }
 
-  // ------------------------------------------------ View remembered in this browser
+  // ------------------------------------------------ View saved in the options of the widget
 
-  // The view (centre and zoom) is kept in the browser of each user, not in the document, so
-  // that people working on the same document do not change each other's view.
-  let viewKey = null;
-  let viewLoaded = false;
+  // The view (centre and zoom) is saved in the options of the widget, so in the document: it is
+  // still there when the user leaves the page and comes back, in any browser. Everyone who opens
+  // the document gets the last saved view.
+  const OPTIONS_WAIT_MS = 2000;
+  let lastSavedView = ``;
+  let firstOptionsSeen = () => {};
+  const firstOptions = new Promise((resolve) => { firstOptionsSeen = resolve; });
+  let lastConfigKey = ``;
 
-  function readView() {
+  // Saves the view in the options, unless it is the one already saved.
+  function saveView(view) {
+    const rounded = roundView(view);
+    const key = JSON.stringify(rounded);
+    if (key === lastSavedView) return;
+    lastSavedView = key;
     try {
-      const saved = JSON.parse(localStorage.getItem(viewKey) || `null`);
-      const valid = saved && [saved.lat, saved.lng, saved.zoom].every(Number.isFinite);
-      return valid ? saved : null;
+      Promise.resolve(grist.setOption(`view`, rounded)).catch(() => {});
     } catch {
-      return null;
+      // The document may be read only for this user: the map then simply opens fitted.
     }
-  }
-
-  function writeView(view) {
-    try {
-      if (view) localStorage.setItem(viewKey, JSON.stringify(view));
-      else localStorage.removeItem(viewKey);
-    } catch {
-      // Storage can be blocked (private window, site data blocked): the map just opens fitted.
-    }
-  }
-
-  // Builds the storage key from the document and table names, then restores the saved view
-  // once, before the first pins are drawn.
-  async function loadViewOnce() {
-    if (viewLoaded) return;
-    viewLoaded = true;
-    const ask = async (fn) => { try { return String(await fn()); } catch { return ``; } };
-    const table = await ask(() => grist.selectedTable.getTableId());
-    const doc = await ask(() => grist.docApi.getDocName());
-    viewKey = `mapview:view:${doc}:${table}`;
-    const saved = readView();
-    if (saved) app.restoreView(saved);
   }
 
   // Moves the Grist cursor to a row (when a pin is clicked, in the widget or in the window).
@@ -100,7 +86,7 @@
     },
     onSelect: (id) => selectRow(id),
     onCatalogWindow: () => catalogLink.open(),
-    onViewChange: (view) => { if (viewKey !== null) writeView(view); },
+    onViewChange: (view) => saveView(view),
     // The same button opens the window, and puts the map back when it is already open.
     onWindowButton: () => {
       if (link.isOpen) {
@@ -130,14 +116,27 @@
   });
 
   grist.onOptions((options) => {
-    shared.config = normalizeConfig(options);
+    // The first options give the saved view, which the map restores when its first pins arrive.
+    const view = readSavedView(options);
+    if (view && !lastSavedView) {
+      lastSavedView = JSON.stringify(roundView(view));
+      app.restoreView(view);
+    }
+    firstOptionsSeen();
+    // Saving the view gives the options back: a configuration that did not change is not applied again.
+    const config = normalizeConfig(options);
+    const key = JSON.stringify(config);
+    if (key === lastConfigKey) return;
+    lastConfigKey = key;
+    shared.config = config;
     app.setConfig(shared.config);
     link.send(`mapview:state`, { ...shared });
     pushConfig();
   });
 
   grist.onRecords(async (rows, mapping) => {
-    await loadViewOnce();
+    // The saved view must be known before the first pins are drawn.
+    await Promise.race([firstOptions, new Promise((resolve) => setTimeout(resolve, OPTIONS_WAIT_MS))]);
     const mapped = grist.mapColumnNames(rows);
     if (!mapped) {
       shared.message = t(`needColumns`);
