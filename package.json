@@ -1,6 +1,6 @@
 {
   "name": "map_view",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "Grist custom widget: a map of the rows of a table, with IGN and open base maps",
   "homepage": "https://github.com/Bigorneau15652/map_view",
   "private": true,

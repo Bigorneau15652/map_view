@@ -284,10 +284,14 @@
       const touched = [previous, marker].filter(Boolean);
       if (touched.length) this.cluster.refreshClusters(touched);
       if (!marker || !(options && options.pan)) return;
-      // The first selection after a restored view leaves the map alone when the pin is in view.
+      // The first selection after a restored view leaves the map where it was left when the pin is in view:
+      // only its label opens, without moving the map to fit it.
       if (this.suppressPan) {
         this.suppressPan = false;
-        if (this.map.getBounds().contains(marker.getLatLng())) return;
+        if (this.map.getBounds().contains(marker.getLatLng())) {
+          if (marker._icon) this._openLabelInPlace(marker);
+          return;
+        }
       }
 
       // The zoom chosen by the user is kept. A pin hidden inside a cluster is only centred
@@ -302,6 +306,15 @@
       this.map.once(`moveend`, () => setTimeout(() => {
         if (this.selectedId === id && marker._icon) marker.openPopup();
       }, 0));
+    }
+
+    // Opens the label of a pin without letting the map move to make room for it.
+    _openLabelInPlace(marker) {
+      const popup = marker.getPopup();
+      const autoPan = popup.options.autoPan;
+      popup.options.autoPan = false;
+      marker.openPopup();
+      popup.options.autoPan = autoPan;
     }
 
     clearSelection() {
