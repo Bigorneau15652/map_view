@@ -145,6 +145,23 @@
         .map((entry) => t(`needsApiKey`, { name: entry.title })).join(` `);
       if (redrawMenu) this.menu.render();
       this.showBanner();
+      this.showPoints();
+    }
+
+    // The pins to draw: all of them, or only the one of the selected row (setting "Pins").
+    // With no row selected, the setting says whether none or all of them are drawn.
+    visiblePoints() {
+      const points = this.latestPoints || [];
+      if (this.config.pinsMode !== `selected`) return points;
+      const id = this.wanted.id;
+      if (id === null || id === undefined) return this.config.emptyMode === `none` ? [] : points;
+      return points.filter((point) => point.id === id);
+    }
+
+    // Brings the map in line with the pins to draw (only what changed is touched).
+    showPoints() {
+      if (this.docked || !this.latestPoints) return;
+      this.engine.setPoints(this.visiblePoints());
     }
 
     showBanner() {
@@ -158,8 +175,8 @@
     setData(data) {
       this.invalidMessage = window.mapViewRecords.describeInvalid(data.invalid, data.columns, t);
       this.showBanner();
-      if (!this.docked) this.engine.setPoints(data.points);
       this.latestPoints = data.points;
+      this.showPoints();
       // A selection that arrived before its pin existed is applied now.
       if (this.wanted.pending) this.select(this.wanted.id, true);
     }
@@ -167,6 +184,7 @@
     // Highlights the pin of a row; with pan, the map moves to it and opens its label.
     select(id, pan) {
       this.wanted = { id, pending: false };
+      this.showPoints();
       if (id === null || id === undefined) {
         this.engine.clearSelection();
         return;
@@ -199,7 +217,7 @@
       }
       this.showMessage(this.dataMessage, false);
       this.engine.invalidateSize();
-      if (this.latestPoints) this.engine.setPoints(this.latestPoints);
+      this.showPoints();
       if (this.wanted.id !== null) this.select(this.wanted.id, true);
     }
 

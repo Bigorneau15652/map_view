@@ -88,8 +88,8 @@
     }
 
     startDraft() {
-      const { baseId, overlayId } = this.getConfig();
-      this.draft = { baseId, overlayId };
+      const { baseId, overlayId, pinsMode, emptyMode } = this.getConfig();
+      this.draft = { baseId, overlayId, pinsMode, emptyMode };
     }
 
     toggle(open) {
@@ -110,6 +110,8 @@
       const patch = {};
       if (this.draft.baseId !== config.baseId) patch.baseId = this.draft.baseId;
       if (this.draft.overlayId !== config.overlayId) patch.overlayId = this.draft.overlayId;
+      if (this.draft.pinsMode !== config.pinsMode) patch.pinsMode = this.draft.pinsMode;
+      if (this.draft.emptyMode !== config.emptyMode) patch.emptyMode = this.draft.emptyMode;
       if (Object.keys(patch).length) this.onChange(patch);
       this.finish();
     }
@@ -137,7 +139,7 @@
       const scroll = list ? list.scrollTop : 0;
       const dialog = this.dialog;
       this.panel.textContent = ``;
-      const tabs = [[`base`, `tabBase`], [`overlay`, `tabOverlay`]];
+      const tabs = [[`base`, `tabBase`], [`overlay`, `tabOverlay`], [`pins`, `tabPins`]];
       this.panel.append(
         h(`div`, { class: `panel-head` },
           h(`strong`, { text: t(`menuTitle`) }),
@@ -163,6 +165,7 @@
 
     listBody() {
       const target = this.tab;
+      if (target === `pins`) return this.pinsBody();
       const fragment = document.createDocumentFragment();
       if (target === `overlay`) fragment.append(this.noneRow());
       const custom = this.getConfig().customMaps
@@ -177,6 +180,29 @@
       fragment.append(this.heading(t(`sectionBase`)));
       catalog.builtIn.forEach((entry) => fragment.append(this.row(entry, target)));
       return fragment;
+    }
+
+    // The "Pins" tab: which pins are shown. Nothing changes on the map before OK.
+    pinsBody() {
+      const fragment = document.createDocumentFragment();
+      const onlySelected = this.draft.pinsMode === `selected`;
+      fragment.append(
+        this.heading(t(`sectionPinsShown`)),
+        this.choiceRow(`pick-pins`, this.draft.pinsMode === `all`, t(`pinsAll`), false, () => { this.draft.pinsMode = `all`; this.render(); }),
+        this.choiceRow(`pick-pins`, onlySelected, t(`pinsSelected`), false, () => { this.draft.pinsMode = `selected`; this.render(); }),
+        this.heading(t(`sectionPinsEmpty`)),
+        this.choiceRow(`pick-empty`, this.draft.emptyMode === `none`, t(`emptyNone`), !onlySelected, () => { this.draft.emptyMode = `none`; }),
+        this.choiceRow(`pick-empty`, this.draft.emptyMode === `all`, t(`emptyAll`), !onlySelected, () => { this.draft.emptyMode = `all`; }),
+        h(`p`, { class: `note`, text: t(`pinsEmptyNote`) })
+      );
+      return fragment;
+    }
+
+    // A radio button with a text, without preview image.
+    choiceRow(name, checked, text, disabled, onchange) {
+      const radio = h(`input`, { type: `radio`, name, checked, disabled, onchange });
+      return h(`div`, { class: `row-wrap` },
+        h(`label`, { class: `row` }, radio, h(`span`, { class: `row-text` }, h(`span`, { class: `row-title`, text }))));
     }
 
     heading(text) {
