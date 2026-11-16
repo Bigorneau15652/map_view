@@ -31,6 +31,10 @@
       overlayId: known(source.overlayId),
       overlayOpacity: clampOpacity(source.overlayOpacity, DEFAULT_OPACITY),
       baseOpacity: clampOpacity(source.baseOpacity, 1),
+      // `all`: one pin per row. `selected`: only the pin of the selected row.
+      pinsMode: source.pinsMode === `selected` ? `selected` : `all`,
+      // With `selected` and no row selected: `none` shows no pin, `all` shows every pin (without label).
+      emptyMode: source.emptyMode === `none` ? `none` : `all`,
       customMaps
     };
   }

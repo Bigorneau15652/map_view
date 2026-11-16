@@ -10,6 +10,7 @@ A map widget for [Grist](https://www.getgrist.com): one pin per row, a label wit
 
 - One pin per row, with the colour taken from a column (HEX code or colour name, in French or English), and a label (title and description) shown when the row is selected.
 - Two-way selection: selecting a row moves the map to its pin, clicking a pin selects the row in Grist.
+- A "Pins" tab in the catalogue chooses what is drawn: every pin, or only the pin of the selected row (useful when the widget follows a table with "Select by", which selects a row but does not filter the others). With no row selected, it shows either no pin or every pin without label.
 - A map catalogue opened from a button with a map icon: 21 reference layers of the IGN with a preview image, three open base maps (OpenStreetMap, CyclOSM, OpenTopoMap) and your own maps. A click shows the map at once on the map; the choice is saved with OK, and Cancel puts the previous map back.
 - A base map and one overlay layer at the same time (for example aerial photographs and cadastral parcels), with a transparency slider at the bottom left of the map (it acts on the overlay, or on the base map when there is no overlay).
 - An "Other..." button to add as many maps as you like (name, tile address, copyright, optional API key, base map or overlay). Each map can be edited with a pencil or deleted with a cross, and is kept in the widget options.
@@ -64,7 +65,7 @@ The map is created once. Changing the base map, the overlay or the transparency 
 
 ### Releasing a change
 
-Browsers keep GitHub Pages files for about ten minutes. Scripts and styles are referenced with `?v=0.4.6`: change that number in `index.html`, `window.html`, `catalog.html` and `js/window-link.js` with every release.
+Browsers keep GitHub Pages files for about ten minutes. Scripts and styles are referenced with `?v=0.4.7`: change that number in `index.html`, `window.html`, `catalog.html` and `js/window-link.js` with every release.
 
 ### Files
 
@@ -85,6 +86,7 @@ Widget carte pour [Grist](https://www.getgrist.com) : une épingle par ligne, un
 
 - Une épingle par ligne, dont la couleur vient d'une colonne (code HEX ou nom de couleur en français ou en anglais), et une étiquette (titre et description) affichée à la sélection de la ligne.
 - Sélection dans les deux sens : sélectionner une ligne amène la carte sur son épingle, cliquer une épingle sélectionne la ligne dans Grist.
+- Un onglet « Épingles » du catalogue choisit ce qui est dessiné : toutes les épingles, ou seulement celle de la ligne sélectionnée (utile quand le widget suit un tableau par « Sélectionner par », qui sélectionne une ligne sans filtrer les autres). Sans ligne sélectionnée, la carte n'affiche aucune épingle ou toutes les épingles sans étiquette.
 - Un catalogue de cartes ouvert par un bouton à pictogramme de carte : 21 couches de référence de l'IGN avec vignette, trois fonds libres (OpenStreetMap, CyclOSM, OpenTopoMap) et vos propres cartes. Un clic affiche aussitôt la carte ; le choix est enregistré avec OK, et Annuler remet la carte précédente.
 - Un fond de carte et une couche superposée en même temps (par exemple photographies aériennes et parcelles cadastrales), avec une réglette de transparence en bas à gauche de la carte (elle agit sur la couche superposée, ou sur le fond de carte quand il n'y en a pas).
 - Un bouton « Autre… » pour ajouter autant de cartes que vous voulez (nom, adresse des tuiles, droits d'auteur, clé API facultative, fond ou couche superposée). Chaque carte peut être modifiée avec un crayon ou supprimée avec une croix, et est conservée dans les options du widget.
@@ -129,7 +131,7 @@ La carte est créée une seule fois. Changer le fond, la couche superposée ou l
 
 ### Publier une modification
 
-Les navigateurs gardent les fichiers de GitHub Pages environ dix minutes. Les scripts et les styles sont appelés avec `?v=0.4.6` : changez ce numéro dans `index.html`, `window.html`, `catalog.html` et `js/window-link.js` à chaque version.
+Les navigateurs gardent les fichiers de GitHub Pages environ dix minutes. Les scripts et les styles sont appelés avec `?v=0.4.7` : changez ce numéro dans `index.html`, `window.html`, `catalog.html` et `js/window-link.js` à chaque version.
 
 ### Fichiers
 

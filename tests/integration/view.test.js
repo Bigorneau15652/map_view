@@ -49,7 +49,7 @@ window.grist = {
   setCursorPos: async () => {},
   onRecords(callback) { setTimeout(() => callback(rows, { Latitude: \`Latitude\`, Longitude: \`Longitude\` }), 20); },
   onRecord(callback) { window.__onRecord = callback; setTimeout(() => callback({ id: 1 }), 60); },
-  onNewRecord() {}
+  onNewRecord(callback) { window.__onNewRecord = callback; }
 };`;
 }
 
@@ -160,4 +160,57 @@ test(`the label also opens when the widget was hidden at the start and is shown 
   const frame = page.frames().find((item) => item.url().includes(`index.html`));
   assert.equal(await frame.locator(`.leaflet-popup`).count(), 1);
   await context.close();
+});
+
+// Number of pins drawn on the map (the ones inside a cluster are counted through the clusters).
+const pinCount = (page) => page.evaluate(() => document.querySelectorAll(`.leaflet-marker-icon:not(.marker-cluster)`).length +
+  [...document.querySelectorAll(`.marker-cluster span`)].reduce((sum, span) => sum + Number(span.textContent), 0));
+
+test(`with the setting "only the selected pin", only the pin of the selected row is drawn and it follows the selection`, async () => {
+  const store = { pinsMode: `selected`, emptyMode: `none` };
+  const first = await visit(store);
+  assert.equal(await pinCount(first.page), 1);
+  assert.match(await first.page.locator(`.leaflet-popup .popup-title`).innerText(), /A/);
+  await first.page.evaluate(() => window.__onRecord({ id: 3 }));
+  await first.page.waitForTimeout(800);
+  assert.equal(await pinCount(first.page), 1);
+  assert.match(await first.page.locator(`.leaflet-popup .popup-title`).innerText(), /C/);
+  assert.deepEqual(first.errors, []);
+  await first.context.close();
+});
+
+test(`with no row selected, the setting chooses between no pin and every pin without label`, async () => {
+  const none = await visit({ pinsMode: `selected`, emptyMode: `none` });
+  await none.page.evaluate(() => window.__onNewRecord());
+  await none.page.waitForTimeout(400);
+  assert.equal(await pinCount(none.page), 0);
+  await none.context.close();
+
+  const all = await visit({ pinsMode: `selected`, emptyMode: `all` });
+  await all.page.evaluate(() => window.__onNewRecord());
+  await all.page.waitForTimeout(400);
+  assert.equal(await pinCount(all.page), 3);
+  assert.equal(await all.page.locator(`.leaflet-popup`).count(), 0);
+  await all.context.close();
+});
+
+test(`by default every pin is drawn`, async () => {
+  const first = await visit({});
+  assert.equal(await pinCount(first.page), 3);
+  await first.context.close();
+});
+
+test(`the Pins tab of the catalogue saves the choice with OK and applies it on the map`, async () => {
+  const store = {};
+  const first = await visit(store);
+  assert.equal(await pinCount(first.page), 3);
+  await first.page.locator(`#tools button.tool`).first().click();
+  await first.page.locator(`.tabs button`, { hasText: /Épingles|Pins/ }).click();
+  await first.page.locator(`.panel .row`).nth(1).click();
+  await first.page.locator(`.panel-foot .action`).click();
+  await first.page.waitForTimeout(600);
+  assert.equal(store.pinsMode, `selected`);
+  assert.equal(await pinCount(first.page), 1);
+  assert.deepEqual(first.errors, []);
+  await first.context.close();
 });
